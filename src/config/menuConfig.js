@@ -28,7 +28,7 @@ const menuList = [
     },
     {
         title: '收入支出',// 菜单标题名称
-        key: '/gui/financial',// 对应的path
+        key: '/backstage/transaction',// 对应的path
         icon: 'MoneyCollectOutlined',// 图标名称
         hidden: false, //是否隐藏
         requireAuth: true, // 是否需要登录后访问

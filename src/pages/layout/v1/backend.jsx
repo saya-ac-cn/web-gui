@@ -11,6 +11,7 @@ import Memo from "../../memo";
 import Plan from "../../plan";
 import Note from "../../note";
 import Statistics from "../../statistics"
+import Transaction from "../../financial/transaction";
 /*
  * 文件名：backend.jsx
  * 作者：liunengkai
@@ -149,6 +150,7 @@ class Backend extends Component {
             <Route path='/backstage/plan' component={Plan}/>
             <Route path='/backstage/note' component={Note}/>
             <Route path='/backstage/statistics' component={Statistics}/>
+            <Route path='/backstage/transaction' component={Transaction}/>
           </Switch>
         </div>
       </div>

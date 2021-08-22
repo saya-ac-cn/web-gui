@@ -28,8 +28,8 @@ class LoginPage extends Component {
 
   state = {
     // 给用户输入的文本框和密码框
-    userName: '---',
-    passWord: '---',
+    userName: '-',
+    passWord: '-',
   };
 
 
