@@ -1,9 +1,9 @@
 const {createProxyMiddleware} = require('http-proxy-middleware');
 
 // 开发环境接口
-//const url = "http://127.0.0.1:8080";
+const url = "http://127.0.0.1:8080";
 // 测试环境接口
- const url = "http://118.24.198.239:8080";
+// const url = "http://118.24.198.239:8080";
 // 线上环境接口
 //const url = "http://laboratory.saya.ac.cn";
 // 配置多个跨域设置

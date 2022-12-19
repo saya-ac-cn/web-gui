@@ -58,6 +58,7 @@ class LoginPage extends Component {
 
   // 初始化窗口
   initWindow = () =>{
+    debugger
     const {ipcRenderer} =  window.electron;
     ipcRenderer.send('switchLoginWindowSize')
   };
