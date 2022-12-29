@@ -1,135 +1,76 @@
-# 项目说明
+# electron-vite-react
 
-本项目作为实验室运营后端项目，主题采用react+less+antd。其中第一个tag版本作为标准化的模板项目，可以直接使用。
+[![awesome-vite](https://awesome.re/mentioned-badge.svg)](https://github.com/vitejs/awesome-vite)
+![GitHub stars](https://img.shields.io/github/stars/caoxiemeihao/vite-react-electron?color=fa6470)
+![GitHub issues](https://img.shields.io/github/issues/caoxiemeihao/vite-react-electron?color=d8b22d)
+![GitHub license](https://img.shields.io/github/license/caoxiemeihao/vite-react-electron)
+[![Required Node.JS >= 14.18.0 || >=16.0.0](https://img.shields.io/static/v1?label=node&message=14.18.0%20||%20%3E=16.0.0&logo=node.js&color=3f893e)](https://nodejs.org/about/releases)
 
-## 构建步骤
-### 检查镜像源，为了加速下载，请切换到国内。
-```shell script
-# 检查镜像源
-  npm config get registry
-  # 镜像源默认是：https://registry.npmjs.org/
-  # 切换到阿里
-  npm config set registry https://registry.npm.taobao.org
-```
-### 升级node->https://segmentfault.com/a/1190000021739166
+English | [简体中文](README.zh-CN.md)
 
-### 创建一个react项目
-```shell script
- create-react-app v1.2.0
-```
+## 👀 Overview
 
-### 安装antd
-```shell script
-   npm install antd
-```
+📦 Ready out of the box  
+🎯 Based on the official [template-react-ts](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts), project structure will be familiar to you  
+🌱 Easily extendable and customizable  
+💪 Supports Node.js API in the renderer process  
+🔩 Supports C/C++ native addons  
+🐞 Debugger configuration included  
+🖥 Easy to implement multiple windows  
 
-### 按需加载
-```shell script
-    npm install  react-app-rewired customize-cra babel-plugin-import
-```
-* 在根目录创建config-overrides.js文件，并写入内容
-* 修改package.json文件
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
-  },
-改为：
-  "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
-    "eject": "react-scripts eject"
-  },
-  目的是启动运行项目时加载config-overrides.js配置文件
+## 🛫 Quick start
 
-### 自定义主题
-
-```shell script
-  npm install less less-loader
-```
-> 注意 less4.*版本 对于当前适配有问题（Unrecognized input. Possibly missing '(' in mixin call.），只能降低版本，问题反馈：https://github.com/ant-design/ant-design/issues/28427
-* 修改config-overrides.js
-``` javascript
-/**
- * 针对antd按需加载配置
- */
-const {override, fixBabelImports, addLessLoader} = require('customize-cra');
-
-module.exports = override(
-    // 针对antd实现按需打包: 根据import来打包(使用babel-plugin-import)
-    fixBabelImports('import', {
-        libraryName: 'antd',
-        libraryDirectory: 'es',
-        style: true,  // 自动打包相关的样式
-    }),
-
-    // 使用less-loader对源码中的less的变量进行重新指定
-    addLessLoader({
-        lessOptions:{
-            javascriptEnabled: true,
-            modifyVars: {'@primary-color': '#ED2553'}
-        }
-    }),
-)
+```sh
+npm create electron-vite
 ```
 
-### 引入路由
+![electron-vite-react.gif](/public/electron-vite-react.gif)
 
-```shell script
-  npm add react-router-dom
+## 🐞 Debug
+
+![electron-vite-react-debug.gif](/public/electron-vite-react-debug.gif)
+
+## 📂 Directory structure
+
+Familiar React application structure, just with `electron` folder on the top :wink:  
+*Files in this folder will be separated from your React application and built into `dist-electron`*  
+
+```tree
+├── electron                                 Electron-related code
+│   ├── main                                 Main-process source code
+│   └── preload                              Preload-scripts source code
+│
+├── release                                  Generated after production build, contains executables
+│   └── {version}
+│       ├── {os}-{os_arch}                   Contains unpacked application executable
+│       └── {app_name}_{version}.{ext}       Installer for the application
+│
+├── public                                   Static assets
+└── src                                      Renderer source code, your React application
 ```
 
-### 安装 axios
-```shell script
-    npm add axios
-```
-### 安装 store
-```shell script
-    npm install store
-```
-### 安装 http-proxy-middleware 用于设置多个代理
-```shell script
-    npm install http-proxy-middleware
-```
+## 🚨 Be aware
 
-### 安装 electron
-```shell script
-    npm install -save electron
-```
+This template integrates Node.js API to the renderer process by default. If you want to follow **Electron Security Concerns** you might want to disable this feature. You will have to expose needed API by yourself.  
 
-安装配置一键开发启动
+To get started, remove the option as shown below. This will [modify the Vite configuration and disable this feature](https://github.com/electron-vite/vite-plugin-electron-renderer#config-presets-opinionated).
 
-### 同时执行多个命令
-```shell script
-    cnpm install concurrently --save-dev
+```diff
+# vite.config.ts
+
+export default {
+  plugins: [
+    ...
+-   // Use Node.js API in the Renderer-process
+-   renderer({
+-     nodeIntegration: true,
+-   }),
+    ...
+  ],
+}
 ```
 
-### 等待资源加载完成
-```shell script
-    cnpm install wait-on --save-dev
-```
+## ❔ FAQ
 
-### 环境变量
-```shell script
-    cnpm install cross-env --save-dev
-```
-
-### 安装 lectron-is-dev
-```shell script
-    // 用于判断当前运行环境是开发环境还是生产环境
-    npm install electron-is-dev --save
-```
-
-### 安装 antd 图标
-```shell script 
-    npm install --save @ant-design/icons
-```
-
-### 重大变更历程事件
-
-
-> ## 2021-02-03 修改记录-项目初始化
-* 构建项目
-
+- [dependencies vs devDependencies](https://github.com/electron-vite/vite-plugin-electron-renderer#dependencies-vs-devdependencies)
+- [C/C++ addons, Node.js modules - Pre-Bundling](https://github.com/electron-vite/vite-plugin-electron-renderer#dependency-pre-bundling)
