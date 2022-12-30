@@ -1,76 +1,61 @@
-# electron-vite-react
+# Tauri + React + Typescript
 
-[![awesome-vite](https://awesome.re/mentioned-badge.svg)](https://github.com/vitejs/awesome-vite)
-![GitHub stars](https://img.shields.io/github/stars/caoxiemeihao/vite-react-electron?color=fa6470)
-![GitHub issues](https://img.shields.io/github/issues/caoxiemeihao/vite-react-electron?color=d8b22d)
-![GitHub license](https://img.shields.io/github/license/caoxiemeihao/vite-react-electron)
-[![Required Node.JS >= 14.18.0 || >=16.0.0](https://img.shields.io/static/v1?label=node&message=14.18.0%20||%20%3E=16.0.0&logo=node.js&color=3f893e)](https://nodejs.org/about/releases)
+# 初始化
+```shell
+# 使用 yarn
+yarn create tauri-app
 
-English | [简体中文](README.zh-CN.md)
-
-## 👀 Overview
-
-📦 Ready out of the box  
-🎯 Based on the official [template-react-ts](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts), project structure will be familiar to you  
-🌱 Easily extendable and customizable  
-💪 Supports Node.js API in the renderer process  
-🔩 Supports C/C++ native addons  
-🐞 Debugger configuration included  
-🖥 Easy to implement multiple windows  
-
-## 🛫 Quick start
-
-```sh
-npm create electron-vite
+# 或使用 npx
+npx create-tauri-app
 ```
 
-![electron-vite-react.gif](/public/electron-vite-react.gif)
+# 项目结构
 
-## 🐞 Debug
-
-![electron-vite-react-debug.gif](/public/electron-vite-react-debug.gif)
-
-## 📂 Directory structure
-
-Familiar React application structure, just with `electron` folder on the top :wink:  
-*Files in this folder will be separated from your React application and built into `dist-electron`*  
-
-```tree
-├── electron                                 Electron-related code
-│   ├── main                                 Main-process source code
-│   └── preload                              Preload-scripts source code
-│
-├── release                                  Generated after production build, contains executables
-│   └── {version}
-│       ├── {os}-{os_arch}                   Contains unpacked application executable
-│       └── {app_name}_{version}.{ext}       Installer for the application
-│
-├── public                                   Static assets
-└── src                                      Renderer source code, your React application
+```text
+[web-gui] # 项目名称
+├─ [node_modules] # 前端依赖
+├─ [src] # 前端程序源
+├─ [src-tauri] # Tauri 程序源
+│    ├─ [icons] # 应用程序图标
+│    ├─ [src] # Tauri App 程序源，例如系统菜单，托盘，插件配置等
+│    ├─ [target] # 构建的产物会被放入此文件夹中，target 目录的结构取决于是否使用 --target 标志为特定的平台构建
+│    ├─ build.rs # Tauri 构建应用
+│    ├─ Cargo.lock # 包含了依赖的精确描述信息，类似于 yarn.lock 或 package-lock.json
+│    ├─ Cargo.toml # Tauri (Rust) 项目清单
+│    └─ tauri.conf.json # 自定义 Tauri 应用程序的配置文件，例如应用程序窗口尺寸，应用名称，权限等
+├─ index.html # 项目主界面
+├─ package.json # 前端项目清单
+├─ tsconfig.json # typescript 配置文件
+├─ vite.config.ts # vite 配置文件
+├─ package-lock.json # 前端依赖的精确描述信息
+└─ ... # 其他
 ```
 
-## 🚨 Be aware
+# 启动项目
 
-This template integrates Node.js API to the renderer process by default. If you want to follow **Electron Security Concerns** you might want to disable this feature. You will have to expose needed API by yourself.  
+有两种启动方式：
 
-To get started, remove the option as shown below. This will [modify the Vite configuration and disable this feature](https://github.com/electron-vite/vite-plugin-electron-renderer#config-presets-opinionated).
+## 1. 启动 web 项目
 
-```diff
-# vite.config.ts
-
-export default {
-  plugins: [
-    ...
--   // Use Node.js API in the Renderer-process
--   renderer({
--     nodeIntegration: true,
--   }),
-    ...
-  ],
-}
+纯前端项目，不和操作系统产生任何交互
+```shell
+npm run dev
 ```
 
-## ❔ FAQ
+## 2. 启动 tauri 项目
 
-- [dependencies vs devDependencies](https://github.com/electron-vite/vite-plugin-electron-renderer#dependencies-vs-devdependencies)
-- [C/C++ addons, Node.js modules - Pre-Bundling](https://github.com/electron-vite/vite-plugin-electron-renderer#dependency-pre-bundling)
+需要和操作系统产生交互，如系统文件读写操作
+
+第一次启动项目时，tauri 会根据src-tauri/Cargo.toml 去下载相关依赖（导致第一次启动比较慢），第二次启动会快很多。
+
+```shell
+npm run tauri dev
+```
+
+# 检查信息
+
+检查 Tauri 信息以确保一切设置正确，在对问题进行分类时，此信息可能很有用。
+
+```shell
+yarn tauri info
+```

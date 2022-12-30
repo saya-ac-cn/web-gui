@@ -1,62 +1,27 @@
-import { rmSync } from 'node:fs'
-import path from 'node:path'
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import electron from 'vite-electron-plugin'
-import { customStart, loadViteEnv } from 'vite-electron-plugin/plugin'
-import renderer from 'vite-plugin-electron-renderer'
-import pkg from './package.json'
-
-rmSync(path.join(__dirname, 'dist-electron'), { recursive: true, force: true })
-
-const isDevelopment = process.env.NODE_ENV === "development" || !!process.env.VSCODE_DEBUG
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  resolve: {
-    alias: {
-      '@': path.join(__dirname, 'src')
-    },
-  },
-  plugins: [
-    react(),
-    electron({
-      include: [
-        'electron'
-      ],
-      transformOptions: {
-        sourcemap: isDevelopment
-      },
-      plugins: [
-        ...(!!process.env.VSCODE_DEBUG
-          ? [
-            // Will start Electron via VSCode Debug
-            customStart(() => debounce(() => console.log(/* For `.vscode/.debug.script.mjs` */'[startup] Electron App'))),
-          ]
-          : []),
-        // Allow use `import.meta.env.VITE_SOME_KEY` in Electron-Main
-        loadViteEnv(),
-      ],
-    }),
-    // Use Node.js API in the Renderer-process
-    renderer({
-      nodeIntegration: true,
-    }),
-  ],
-  server: !!process.env.VSCODE_DEBUG ? (() => {
-    const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL)
-    return {
-      host: url.hostname,
-      port: +url.port,
-    }
-  })() : undefined,
-  clearScreen: false,
-})
+  plugins: [react()],
 
-function debounce<Fn extends (...args: any[]) => void>(fn: Fn, delay = 299): Fn {
-  let t: number
-  return ((...args: Parameters<Fn>) => {
-    clearTimeout(t)
-    t = setTimeout(() => fn(...args), delay)
-  }) as Fn
-}
+  // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
+  // prevent vite from obscuring rust errors
+  clearScreen: false,
+  // tauri expects a fixed port, fail if that port is not available
+  server: {
+    port: 1420,
+    strictPort: true,
+  },
+  // to make use of `TAURI_DEBUG` and other env variables
+  // https://tauri.studio/v1/api/config#buildconfig.beforedevcommand
+  envPrefix: ["VITE_", "TAURI_"],
+  build: {
+    // Tauri supports es2021
+    target: ["es2021", "chrome100", "safari13"],
+    // don't minify for debug builds
+    minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
+    // produce sourcemaps for debug builds
+    sourcemap: !!process.env.TAURI_DEBUG,
+  },
+});

@@ -1,16 +1,20 @@
-import { useState } from 'react'
-import './App.scss'
+import { useState } from "react";
+import { invoke } from "@tauri-apps/api/tauri";
 
-console.log('[App.tsx]', `Hello world from Electron ${process.versions.electron}!`)
-// console.log(import.meta.env,'=', import.meta.env.VITE_API)
 function App() {
-  const [count, setCount] = useState(0)
+  const [greetMsg, setGreetMsg] = useState("");
+  const [name, setName] = useState("");
+
+  async function greet() {
+    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
+    setGreetMsg(await invoke("greet", { name }));
+  }
 
   return (
-    <div className="App">
-      页面
+    <div className="container">
+        rust
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
