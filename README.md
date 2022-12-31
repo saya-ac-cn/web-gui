@@ -59,3 +59,10 @@ npm run tauri dev
 ```shell
 yarn tauri info
 ```
+
+# 参考
+1、tauri.conf.json 配置 https://zhuanlan.zhihu.com/p/536675879
+
+2、动态加载路由 https://www.codeleading.com/article/97586131268/
+
+3、https://blog.csdn.net/m0_73121002/article/details/128331442

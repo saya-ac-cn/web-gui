@@ -1,20 +1,15 @@
 import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
+import Router from './router'
+import {BrowserRouter} from 'react-router-dom'
+import 'antd/dist/reset.css';
+
+console.log(import.meta.env)
 
 function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
-
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
-    setGreetMsg(await invoke("greet", { name }));
-  }
-
   return (
-    <div className="container">
-        rust
-    </div>
-  );
-}
-
-export default App;
+      <BrowserRouter>
+          <Router/>
+      </BrowserRouter>
+  )}
+export default App
