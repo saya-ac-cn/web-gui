@@ -64,15 +64,15 @@ class RequestHttp {
                 const { data, config } = response;
                 // * 在请求结束后，移除本次请求
                 axiosCanceler.removePending(config);
-                // * 登陆失效操作
+                // 会话过期操作
                 if (data.code == ResultEnum.OVERDUE) {
                     message.error(data.message);
                     return Promise.reject(data);
                 }
                 // * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
-                if (data.code && data.code !== ResultEnum.SUCCESS) {
-                    return Promise.reject(data);
-                }
+                // if (data.code && data.code !== ResultEnum.SUCCESS) {
+                //     return Promise.reject(data);
+                // }
                 // * 成功请求
                 return data;
             },

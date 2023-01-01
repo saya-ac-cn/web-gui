@@ -54,12 +54,20 @@
     },
     "windows": [
       {
+        "label": "login",
+        "title": "统一身份认证入口",
+        "url": "/",
         "fullscreen": false,
-        "height": 600,
-        "resizable": true,
-        "title": "web-gui",
-        "width": 800
+        "height": 528,
+        "resizable": false,
+        "decorations": false,
+        "width": 890
       }
-    ]
+    ],
+    "systemTray": {
+      "iconPath": "icons/icon.ico",
+      "iconAsTemplate": true,
+      "menuOnLeftClick": false
+    }
   }
 }

@@ -1,5 +1,5 @@
 import React,{useState,useEffect} from "react";
-import {loginApi} from "@/http/api"
+import {planApi} from "@/http/api"
 
 const Home = () => {
 
@@ -7,24 +7,24 @@ const Home = () => {
 
     const getPlan = async () => {
         const param = {archive_date:'2022-12'}
-        const response = await loginApi(param);
+        const response = await planApi(param);
         const data:any = response.data
         setPlan(data);
         console.log(data);
     }
 
     useEffect(() => {
-        getPlan();
+        //getPlan();
     },[])
 
     return (
         <div>
             home page
-            <ul>
-                {
-                    plan.map(item => (<li>{item.number}</li>))
-                }
-            </ul>
+            {/*<ul>*/}
+            {/*    {*/}
+            {/*        plan.map(item => (<li>{item.number}</li>))*/}
+            {/*    }*/}
+            {/*</ul>*/}
         </div>
     )
 }

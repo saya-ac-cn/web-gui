@@ -13,7 +13,7 @@ const News:React.FC = () => {
     return (
         <div>
             动态页面
-            <Button type="primary" onClick={() => editRef.current.handleDisplay(10)}>
+            <Button type="primary" onClick={() => editRef.current.handleDisplay({'username':'shmily', 'password':'123456'})}>
                 详情
             </Button>
             <EditNews ref={editRef} refreshPage={getData}/>

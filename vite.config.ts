@@ -46,7 +46,7 @@ export default ({mode}) => {
       port: 1420,
       strictPort: true,
       proxy: {
-        '/frontend': {
+        '/backend': {
           target: env.VITE_API,
           changeOrigin: true,
           //rewrite: path => path.replace(/^\/api/, '')
