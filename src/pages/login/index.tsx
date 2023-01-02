@@ -3,7 +3,7 @@ import { Form, Input, Button, Checkbox } from 'antd';
 import "./index.less"
 import {clearTrimValueEvent} from "@/utils/string"
 import Storage from '@/utils/storage'
-import {loginApi} from "@/http/api"
+import {loginApi,ownOrganizeUserApi} from "@/http/api"
 import {openNotificationWithIcon} from "@/utils/window";
 import {openStageWindow} from '@/windows/actions'
 import { appWindow } from '@tauri-apps/api/window'
@@ -21,8 +21,8 @@ const tailLayout = {
 const Login = () => {
 
     const [loinForm] = Form.useForm();
-    const [user, setUser] = useState({account:'',password:'',remember:false});
-    const [loading, setLoading] = useState(false);
+    const [user, set_user] = useState({account:'',password:'',remember:false});
+    const [loading, set_loading] = useState(false);
 
     useEffect(()=>{
         rememberMeData()
@@ -39,24 +39,24 @@ const Login = () => {
         // 解密密码并赋值到表单
         const password = window.atob(remember.password)
         const user = {account:remember.account,password:password,remember:false}
-        setUser(user)
+        set_user(user)
         loinForm.setFieldsValue(user);
     }
 
     const onFinish = () => {
-        setLoading(true)
+        set_loading(true)
         loinForm.validateFields().then((values) => {
             loginHandle(values)
         }).catch((info) => {
-            setLoading(false);
+            set_loading(false);
             console.log('表单校验不通过:', info);
         });
     };
 
     const loginHandle = async (values) => {
         let loginParam = {account: values.account, password: values.password};
-        const result = await loginApi(loginParam);
-        setLoading(false);
+        const result = await loginApi(loginParam).catch(()=>{set_loading(false)});
+        set_loading(false);
         let {code, data} = result;
         if (code === 0) {
             let {access_token,log,plan,user} = data
@@ -66,7 +66,7 @@ const Login = () => {
             Storage.add(Storage.PLAN_KEY,plan)
             Storage.add(Storage.LOG_KEY,log)
             // 获取组织用户列表信息
-            // await _this.getOwnOrganizeUser()
+            await getOwnOrganizeUser()
             if (values.remember){
                 const cache = { account: values.account, password: window.btoa(values.password)}
                 Storage.add(Storage.LOGIN_KEY,cache)
@@ -84,7 +84,23 @@ const Login = () => {
         await appWindow.minimize()
     }
 
-
+    /**
+     * 获取自己所在组织下的用户
+     */
+    const getOwnOrganizeUser = async () => {
+        // 发异步ajax请求, 获取数据
+        const {msg, code, data} = await ownOrganizeUserApi()
+        if (code === 0) {
+            let organize = {};
+            for (let index in data) {
+                const item = data[index]
+                organize[item.account] = item.name
+            }
+            Storage.add(Storage.ORGANIZE_KEY,organize)
+        } else {
+            openNotificationWithIcon("error", "错误提示", msg);
+        }
+    }
 
     return (
         <div style={{backgroundImage: `url('/picture/login/login_background.png')`}} className='login-page'>

@@ -121,15 +121,11 @@
       .menu-item:hover {
         background-color:#fff ! important;
         color:#1AAB8A;
-        //padding-bottom: .1rem;
-        //padding-top: .1rem;
       }
       // 鼠标选中样式
       .menu-item-selected {
         background-color:#fff ! important;
         color:#1AAB8A;
-        //padding-bottom: .2rem;
-        //padding-top: .2rem;
       }
       .menu-item:before,.menu-item:after {
         content:'';
@@ -159,44 +155,66 @@
     flex: 1;
     padding: 1em;
     overflow-y: auto;
-    >div{
+    // 子页面内容容器
+    .child-container{
       height: 100%;
-    }
-    header{
-      height: 6em;
-      .page-name{
-        font-size: 1.4em;
-        font-weight: 400;
-        color: darkseagreen;
+      display: flex;
+      flex-direction: column;
+      // 子页面的工具栏
+      .header-tools{
+        padding-top: .5em;
+        padding-bottom: .5em;
+        color: #99CCFF;
+        font-size: 1.1em;
       }
-    }
-    // 表单选择器
-    .form-select {
-      width: 200px;
-      .ant-select-selector{
-        background: @container-background-color;
-      }
-    }
-    // 表单范围选择器
-    .form-input,.form-range,.ant-picker{
-      background: @container-background-color;
-    }
-    // 表单按钮
-    .form-button{
-      opacity: 0.7;
-    }
-    // 为子页面统一设置样式
-    .ant-table{
-      background: @container-background-color;
-      thead{
-        tr,th{
-          background: @container-background-color;
+      // 子页面正文容器
+      .child-content{
+        //flex: 1;
+        height: 100%;
+        overflow-y: auto;
+        background-color: rgba(255, 255, 255, 0.902);
+
+        .toolbar{
+          padding: 0.5em;
         }
-      }
-      tbody{
-        tr:hover,td:hover{
-          background: rgba(255,255,255,0.4);
+
+        .dataTable{
+          padding: 0.5em;
+
+          .ant-table{
+            background-color: rgba(255, 255, 255, 0.2) !important;
+          }
+
+          //修改表头文字、背景颜色
+          .ant-table-thead > tr > th,
+          .ant-table-thead > tr{
+            //color: white;
+            background-color:unset !important;
+            border-right: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+            border-top: 1px solid #ccc;
+          }
+
+          .ant-table-thead > tr > th:first-child{
+            border-left: 1px solid #ccc;
+          }
+
+          //修改列表背景颜色
+          .ant-table-tbody > tr > td{
+            border-right: 1px solid #ccc;
+            border-bottom: 1px solid #ccc;
+          }
+
+          .ant-table-tbody > tr > td:first-child{
+            border-left: 1px solid #ccc;
+          }
+
         }
+
+      }
+      // 子页面正文容器不显示滚动条
+      .child-content::-webkit-scrollbar {
+        width: 0
       }
     }
   }

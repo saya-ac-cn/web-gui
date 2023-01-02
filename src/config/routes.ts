@@ -10,7 +10,7 @@ interface Router {
 }
 const routes : Array<Router> = [
     {
-        name: '主页',
+        name: '概览',
         path: '/home',
         exact: true,
         element: lazy(() => import('../pages/home')),
@@ -26,7 +26,7 @@ const routes : Array<Router> = [
         icon: HomeOutlined
     },
     {
-        name: '收入支出',
+        name: '记账本',
         path: '/journal',
         exact: true,
         element: lazy(() => import('../pages/home')),
@@ -34,7 +34,7 @@ const routes : Array<Router> = [
         icon: MoneyCollectOutlined
     },
     {
-        name: '收支汇总',
+        name: '收支详情',
         path: '/statistics',
         exact: true,
         element: lazy(() => import('../pages/home')),
@@ -50,7 +50,7 @@ const routes : Array<Router> = [
         icon: NotificationOutlined
     },
     {
-        name: '笔记便笺',
+        name: '笔记簿',
         path: '/note',
         exact: true,
         element: lazy(() => import('../pages/home')),
@@ -58,8 +58,16 @@ const routes : Array<Router> = [
         icon: FileTextOutlined
     },
     {
-        name: '日程安排',
+        name: '待提醒项',
         path: '/plan',
+        exact: true,
+        element: lazy(() => import('../pages/home')),
+        display: true,
+        icon: ScheduleOutlined
+    },
+    {
+        name: '已提醒项',
+        path: '/archive',
         exact: true,
         element: lazy(() => import('../pages/home')),
         display: true,
@@ -74,10 +82,26 @@ const routes : Array<Router> = [
         icon: TagOutlined
     },
     {
-        name: '操作日志',
-        path: '/logs',
+        name: '文件夹',
+        path: '/file',
         exact: true,
         element: lazy(() => import('../pages/home')),
+        display: true,
+        icon: TagOutlined
+    },
+    {
+        name: '数据备份',
+        path: '/db',
+        exact: true,
+        element: lazy(() => import('../pages/home')),
+        display: true,
+        icon: HistoryOutlined
+    },
+    {
+        name: '操作日志',
+        path: '/log',
+        exact: true,
+        element: lazy(() => import('../pages/log')),
         display: true,
         icon: HistoryOutlined
     }

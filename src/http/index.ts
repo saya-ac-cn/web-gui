@@ -1,13 +1,19 @@
 import axios, {AxiosInstance, AxiosError, AxiosRequestConfig, AxiosResponse, CreateAxiosDefaults} from "axios";
 import { AxiosCanceler } from "./axios-cancel";
 import { checkStatus } from "./check-status";
-import { message } from 'antd'
+import {openNotificationWithIcon} from "@/utils/window";
+import {doRefreshToken} from "@/http/token";
+import {openLoginWindow} from "@/windows/actions";
+
+
 
 enum ResultEnum {
     SUCCESS = 200,
     ERROR = 500,
-    OVERDUE = 10001,
-    TIMEOUT = 6000,
+    // 会话过期状态码
+    OVERDUE = 401,
+    // 请求超时时间
+    TIMEOUT = 60000,
     TYPE = "success"
 }
 
@@ -36,6 +42,8 @@ const config = {
 
 class RequestHttp {
     service: AxiosInstance;
+    access_token: string | null | unknown;
+
     constructor(config) {
         // 实例化axios
         this.service = axios.create(config);
@@ -46,9 +54,10 @@ class RequestHttp {
         this.service.interceptors.request.use(
             (config: AxiosRequestConfig) => {
                 axiosCanceler.addPending(config);
-                // * 需要添加的token 自行设置
-                const token: string|null = '';
-                config.headers.token = token;
+                // 需要添加的token 自行设置
+                if (this.access_token){
+                    config.headers.access_token = this.access_token;
+                }
                 return config;
             },
             (error: AxiosError) => {
@@ -61,12 +70,13 @@ class RequestHttp {
          */
         this.service.interceptors.response.use(
             (response: AxiosResponse) => {
-                const { data, config } = response;
+                const {data, config} = response;
                 // * 在请求结束后，移除本次请求
                 axiosCanceler.removePending(config);
                 // 会话过期操作
                 if (data.code == ResultEnum.OVERDUE) {
-                    message.error(data.message);
+                    openNotificationWithIcon("error", "错误提示", '您已经长时间未操作，请重新登录！');
+                    openLoginWindow()
                     return Promise.reject(data);
                 }
                 // * 全局错误信息拦截（防止下载文件得时候返回数据流，没有code，直接报错）
@@ -77,7 +87,7 @@ class RequestHttp {
                 return data;
             },
             async (error: AxiosError) => {
-                const { response } = error;
+                const {response} = error;
                 // 根据响应的错误状态码，做不同的处理
                 if (response) return checkStatus(response.status);
                 // 服务器结果都没有返回(可能服务器错误可能客户端断网)，断网处理:可以跳转到断网页面
@@ -88,17 +98,26 @@ class RequestHttp {
     }
 
     // * 常用请求方法封装
-    get<T>(url: string, params?: any, _object = {}): Promise<ResultData<T>> {
-        return this.service.get(url, { params, ..._object });
+    async get<T>(url: string, params?: any, _object = {}): Promise<AxiosResponse<any>> {
+        this.access_token = await doRefreshToken();
+        console.log(this.access_token);
+        return this.service.get(url, {params, ..._object});
     }
-    post<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
+    async post<T>(url: string, params?: object, _object = {}): Promise<AxiosResponse<any>> {
+        // 判断是否需要刷新token
+        this.access_token = await doRefreshToken();
+        console.log(this.access_token);
         return this.service.post(url, params, _object);
     }
-    put<T>(url: string, params?: object, _object = {}): Promise<ResultData<T>> {
+    async put<T>(url: string, params?: object, _object = {}): Promise<AxiosResponse<any>> {
+        this.access_token = await doRefreshToken();
+        console.log(this.access_token);
         return this.service.put(url, params, _object);
     }
-    delete<T>(url: string, params?: any, _object = {}): Promise<ResultData<T>> {
-        return this.service.delete(url, { params, ..._object });
+    async delete<T>(url: string, params?: any, _object = {}): Promise<AxiosResponse<any>> {
+        this.access_token = await doRefreshToken();
+        console.log(this.access_token);
+        return this.service.delete(url, {params, ..._object});
     }
 }
 
