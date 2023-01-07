@@ -7,6 +7,10 @@ import {SearchOutlined,ReloadOutlined,FileExcelOutlined} from '@ant-design/icons
 import moment from 'moment';
 import axios from 'axios'
 import {disabledDate, extractUserName} from "@/utils/var"
+import { save as openSaveFileDialog} from '@tauri-apps/api/dialog';
+import { writeBinaryFile, writeTextFile,BaseDirectory } from '@tauri-apps/api/fs';
+
+
 
 const {RangePicker} = DatePicker;
 const {Option} = Select;
@@ -34,7 +38,7 @@ const Log = () => {
         {
             title: '用户',
             dataIndex: 'user', // 显示数据对应的属性名
-            align:'center',
+            align:'left',
             render:(value,row) => (extractUserName(organize, row.user))
         },
         {
@@ -44,7 +48,7 @@ const Log = () => {
         {
             title: 'ip',
             dataIndex: 'ip', // 显示数据对应的属性名
-            align:'center',
+            align:'left',
         },
         {
             title: '城市',
@@ -53,7 +57,7 @@ const Log = () => {
         {
             title: '日期',
             dataIndex: 'date', // 显示数据对应的属性名
-            align:'center'
+            align:'left'
         }
     ]
 
@@ -192,23 +196,19 @@ const Log = () => {
                 "Content-Type": "application/json",
                 "access_token":access_token
             },
-        }).then(function (res) {
-                set_loading(false);
-                console.log(res)
-                let fileName = '操作日志报表.xlsx';//excel文件名称
-                let blob = new Blob([res.data], {type: 'application/x-xlsx'});   //word文档为msword,pdf文档为pdf，excel文档为x-xls
-                if (window.navigator.msSaveOrOpenBlob) {
-                    navigator.msSaveBlob(blob, fileName);
-                } else {
-                    let link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = fileName;
-                    link.click();
-                    window.URL.revokeObjectURL(link.href);
-                }
+        }).then( async (res) => {
+            set_loading(false);
+            console.log(res)
+            let fileName = '操作日志报表.xlsx';
+            let blob = new Blob([res.data]);
+            blob.arrayBuffer().then(async buffer => {
+                await writeBinaryFile({path: fileName, contents: buffer}, {dir: BaseDirectory.Desktop});
+                openNotificationWithIcon("success","导出提示", "操作日志报表已经导出到桌面，请及时查阅")
             })
+        })
             .catch((res) =>{
                 set_loading(false);
+                console.log(res)
                 openNotificationWithIcon("error", "错误提示", "导出日志报表失败");
             });
     };
