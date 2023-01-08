@@ -30,5 +30,18 @@ export const logTypeListApi = () => RequestHttp.get(`${backendAPI}/system/log/ty
 export const downloadLogExcelApi = `${backendAPI}/system/log/excel`;
 
 
+// 上传文件
+export const uploadFileApi = `${backendAPI}/oss/files/file`;
+// 查看分页后的文件
+export const filePageApi = params => RequestHttp.get(`${backendAPI}/oss/files/page`, params);
+// 删除文件
+export const deleteFileApi = params => RequestHttp.delete(`${backendAPI}/oss/files`, params);
+// 修改文件
+export const editFileApi = params => RequestHttp.put(`${backendAPI}/oss/files/file`, params);
+// 下载文件
+export const downloadFileApi = `${backendAPI}/oss/files/download/`;
+
+
+
 // 获取计划
-export const planApi = params => RequestHttp.get('/frontend/plan/1',params)
+export const planApi = params => RequestHttp.get('/frontend/plan/1',params);

@@ -3,15 +3,27 @@ import {Routes,Route,useNavigate,useLocation} from "react-router-dom";
 import {Suspense,useState,useEffect} from "react";
 import moment from 'moment';
 import "./index.less"
+import Storage from '@/utils/storage'
+import {isEmptyObject} from "@/utils/var"
+
 const Layout = () => {
 
-    const [greet,setGreet] = useState({when:'',text:''})
+    const [greet,setGreet] = useState({when:null,text:null})
+    const [user,set_user] = useState({logo:null,name:null})
+    const [plan,set_plan] = useState({})
+    const [log,set_log] = useState({date:null,city:null,ip:null})
 
     const navigate = useNavigate()
 
     const location = useLocation()
 
     useEffect(()=>{
+        const user = Storage.get(Storage.USER_KEY) || {};
+        const plan = Storage.get(Storage.PLAN_KEY) || [];
+        const log = Storage.get(Storage.LOG_KEY) || {};
+        set_user(user)
+        set_plan(plan)
+        set_log(log)
         getGreetText()
     },[])
 
@@ -70,7 +82,6 @@ const Layout = () => {
         </div>);
     })
 
-
     return (
         <div style={{backgroundImage: `url('/picture/layout/animation.svg')`}} className='layout-page'>
             <div data-tauri-drag-region className='window-title'>
@@ -79,11 +90,17 @@ const Layout = () => {
                 <a className='light green'/>
             </div>
             <div className='menu-area'>
-                <div style={{backgroundImage: `url('/picture/layout/user.png')`}} className='user-logo'></div>
+                <div style={{backgroundImage:`url('${user.logo?user.logo:'/picture/layout/user.png'}')`}} className='user-logo'></div>
                 <div className='greetings-area'>
-                    <p className='user-name'>{greet.when}Pandora</p>
+                    <p className='user-name'>{greet.when+' '+user.name}</p>
                     <p className='greetings-word'>{greet.text}</p>
-                    <p className='pre-log'>最后一次操作：2023-01-01 00:00:00 四川省自贡市</p>
+                    <p className='pre-log'>
+                        {
+                            !(isEmptyObject(log)) ?
+                                <span>{`最后一次操作：${log.date} ${log.city}(${log.ip})`}</span> :
+                                <span>Hi，这是您第一次使用吧？如有需要帮助的请及时联系运营团队。</span>
+                        }
+                    </p>
                     <p className='today-plan'>今日安排：无</p>
                 </div>
                 <div className='calendar'>

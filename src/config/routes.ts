@@ -85,15 +85,15 @@ const routes : Array<Router> = [
         name: '文件夹',
         path: '/file',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/file')),
         display: true,
         icon: TagOutlined
     },
     {
         name: '数据备份',
-        path: '/db',
+        path: '/data',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/data')),
         display: true,
         icon: HistoryOutlined
     },

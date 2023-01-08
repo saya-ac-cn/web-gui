@@ -1,14 +1,13 @@
 import {openNotificationWithIcon} from '@/utils/window'
 import {Col, Form, Button, Table, DatePicker, Select} from 'antd';
-import {useEffect,useRef,useState} from 'react';
+import {useEffect,useState} from 'react';
 import {logPageApi,logTypeListApi,downloadLogExcelApi} from "@/http/api"
 import Storage from '@/utils/storage'
 import {SearchOutlined,ReloadOutlined,FileExcelOutlined} from '@ant-design/icons';
 import moment from 'moment';
 import axios from 'axios'
 import {disabledDate, extractUserName} from "@/utils/var"
-import { save as openSaveFileDialog} from '@tauri-apps/api/dialog';
-import { writeBinaryFile, writeTextFile,BaseDirectory } from '@tauri-apps/api/fs';
+import { writeBinaryFile,BaseDirectory } from '@tauri-apps/api/fs';
 
 
 
@@ -19,7 +18,7 @@ const Log = () => {
 
     const [grid,set_grid] = useState([])
     const [pagination,set_pagination] = useState({page_no:1,page_size:10,data_total:0})
-    const [filters,set_filters] = useState({date: null,begin_time: null,end_time: null,category: null})
+    const [filters,set_filters] = useState({begin_time: null,end_time: null,category: null})
     const [type,set_type] = useState([])
     const [loading,set_loading] = useState(false)
     const organize = Storage.get(Storage.ORGANIZE_KEY)
@@ -136,7 +135,6 @@ const Log = () => {
      * @param current
      */
     const changePage = (current) => {
-        console.log(current)
         pagination.page_no = current
         set_pagination(pagination)
         getData()
@@ -186,6 +184,7 @@ const Log = () => {
             begin_time: filters.begin_time,
             end_time: filters.end_time,
         };
+        let fileName = '操作日志报表.xlsx';
         axios({
             method: "GET",
             url: downloadLogExcelApi,   //接口地址
@@ -199,18 +198,16 @@ const Log = () => {
         }).then( async (res) => {
             set_loading(false);
             console.log(res)
-            let fileName = '操作日志报表.xlsx';
             let blob = new Blob([res.data]);
             blob.arrayBuffer().then(async buffer => {
                 await writeBinaryFile({path: fileName, contents: buffer}, {dir: BaseDirectory.Desktop});
-                openNotificationWithIcon("success","导出提示", "操作日志报表已经导出到桌面，请及时查阅")
+                openNotificationWithIcon("success","导出提示", `${fileName}已经导出到桌面，请及时查阅`)
             })
-        })
-            .catch((res) =>{
-                set_loading(false);
-                console.log(res)
-                openNotificationWithIcon("error", "错误提示", "导出日志报表失败");
-            });
+        }).catch((res) =>{
+            set_loading(false);
+            console.log(res)
+            openNotificationWithIcon("error", "错误提示", "导出日志报表失败");
+        });
     };
 
 
@@ -250,7 +247,7 @@ const Log = () => {
                         </Form>
                     </Col>
                     <Col span={24} className="dataTable">
-                        <Table size="middle" rowKey="id" bordered loading={loading} columns={columns} dataSource={grid}
+                        <Table size="small" rowKey="id" bordered loading={loading} columns={columns} dataSource={grid}
                                pagination={{
                                    current:pagination.page_no,
                                    showTotal: () => `当前第${pagination.page_no}页 共${pagination.data_total}条`,
