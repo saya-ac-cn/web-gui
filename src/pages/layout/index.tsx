@@ -8,10 +8,10 @@ import {isEmptyObject} from "@/utils/var"
 
 const Layout = () => {
 
-    const [greet,setGreet] = useState({when:null,text:null})
-    const [user,set_user] = useState({logo:null,name:null})
-    const [plan,set_plan] = useState({})
-    const [log,set_log] = useState({date:null,city:null,ip:null})
+    const [greet,setGreet] = useState({when:'',text:''})
+    const [user,setUser] = useState({logo:null,name:null})
+    const [plan,setPlan] = useState({})
+    const [log,setLog] = useState({date:null,city:null,ip:null})
 
     const navigate = useNavigate()
 
@@ -21,9 +21,9 @@ const Layout = () => {
         const user = Storage.get(Storage.USER_KEY) || {};
         const plan = Storage.get(Storage.PLAN_KEY) || [];
         const log = Storage.get(Storage.LOG_KEY) || {};
-        set_user(user)
-        set_plan(plan)
-        set_log(log)
+        setUser(user)
+        setPlan(plan)
+        setLog(log)
         getGreetText()
     },[])
 

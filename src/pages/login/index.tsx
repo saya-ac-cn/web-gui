@@ -21,8 +21,8 @@ const tailLayout = {
 const Login = () => {
 
     const [loinForm] = Form.useForm();
-    const [user, set_user] = useState({account:'',password:'',remember:false});
-    const [loading, set_loading] = useState(false);
+    const [user, setUser] = useState({account:'',password:'',remember:false});
+    const [loading, setLoading] = useState(false);
 
     useEffect(()=>{
         rememberMeData()
@@ -36,27 +36,25 @@ const Login = () => {
         if (!remember){
             return
         }
-        // 解密密码并赋值到表单
-        const password = window.atob(remember.password)
-        const user = {account:remember.account,password:password,remember:false}
-        set_user(user)
+        const user = {account:remember.account,password:'',remember:false}
+        setUser(user)
         loinForm.setFieldsValue(user);
     }
 
     const onFinish = () => {
-        set_loading(true)
+        setLoading(true)
         loinForm.validateFields().then((values) => {
             loginHandle(values)
         }).catch((info) => {
-            set_loading(false);
+            setLoading(false);
             console.log('表单校验不通过:', info);
         });
     };
 
     const loginHandle = async (values) => {
         let loginParam = {account: values.account, password: values.password};
-        const result = await loginApi(loginParam).catch(()=>{set_loading(false)});
-        set_loading(false);
+        const result = await loginApi(loginParam).catch(()=>{setLoading(false)});
+        setLoading(false);
         let {code, data} = result;
         if (code === 0) {
             let {access_token,log,plan,user} = data
@@ -68,7 +66,7 @@ const Login = () => {
             // 获取组织用户列表信息
             await getOwnOrganizeUser()
             if (values.remember){
-                const cache = { account: values.account, password: window.btoa(values.password)}
+                const cache = { account: values.account}
                 Storage.add(Storage.LOGIN_KEY,cache)
             }
             openStageWindow()
@@ -111,11 +109,11 @@ const Login = () => {
             </div>
             <Form {...layout} name="login" form={loinForm}>
                 <h2 className="title">统一身份认证入口</h2>
-                <Form.Item label="账号" name="account" initialValue={user.account} getValueFromEvent={ (e) => clearTrimValueEvent(e.target.value)} rules={[{ required: true, message: '请输入账号!' }]}>
+                <Form.Item label="账号" name="account" initialValue={user.account} getValueFromEvent={(e) => clearTrimValueEvent(e.target.value)} rules={[{ required: true, message: '请输入账号!' }]}>
                     <Input maxLength={32}/>
                 </Form.Item>
 
-                <Form.Item label="密码" name="password" initialValue={user.password} getValueFromEvent={ (e) => clearTrimValueEvent(e.target.value)} rules={[{ required: true, message: '请输入密码!' }]}>
+                <Form.Item label="密码" name="password" initialValue={user.password} getValueFromEvent={(e) => clearTrimValueEvent(e.target.value)} rules={[{ required: true, message: '请输入密码!' }]}>
                     <Input.Password maxLength={32}/>
                 </Form.Item>
 

@@ -16,16 +16,16 @@ const {Option} = Select;
 
 const Log = () => {
 
-    const [grid,set_grid] = useState([])
-    const [pagination,set_pagination] = useState({page_no:1,page_size:10,data_total:0})
-    const [filters,set_filters] = useState({begin_time: null,end_time: null,category: null})
-    const [type,set_type] = useState([])
-    const [loading,set_loading] = useState(false)
+    const [grid,setGrid] = useState([])
+    const [pagination,setPagination] = useState({page_no:1,page_size:10,data_total:0})
+    const [filters,setFilters] = useState({begin_time: null,end_time: null,category: null})
+    const [type,setType] = useState([])
+    const [loading,setLoading] = useState(false)
     const organize = Storage.get(Storage.ORGANIZE_KEY)
 
     useEffect(()=>{
         getTypeData()
-        getData()
+        getData(filters,pagination)
     },[])
 
     const columns = [
@@ -75,7 +75,7 @@ const Log = () => {
             data.forEach(item => {
                 type.push((<Option key={item.category} value={item.category}>{item.detail}</Option>));
             });
-           set_type(type)
+           setType(type)
         } else {
             openNotificationWithIcon("error", "错误提示", msg);
         }
@@ -85,23 +85,23 @@ const Log = () => {
      * 获取日志数据
      * @returns {Promise<void>}
      */
-    const getData = async () => {
+    const getData = async (_filters,_pagination) => {
         let para = {
-            page_no: pagination.page_no,
-            page_size: pagination.page_size,
-            category: filters.category,
-            begin_time: filters.begin_time,
-            end_time: filters.end_time,
+            page_no: _pagination.page_no,
+            page_size: _pagination.page_size,
+            category: _filters.category,
+            begin_time: _filters.begin_time,
+            end_time: _filters.end_time,
         };
         // 在发请求前, 显示loading
-        set_loading(true)
+        setLoading(true)
         // 发异步ajax请求, 获取数据
         const {msg, code, data} = await logPageApi(para);
         // 在请求完成后, 隐藏loading
-        set_loading(false)
+        setLoading(false)
         if (code === 0) {
-            set_grid(data.records);
-            set_pagination({...pagination,data_total: data.total_row})
+            setGrid(data.records);
+            setPagination({..._pagination,data_total: data.total_row})
         } else {
             openNotificationWithIcon("error", "错误提示", msg);
         }
@@ -111,11 +111,11 @@ const Log = () => {
      * 重置查询条件
      */
     const reloadPage = () => {
-        filters.begin_time = null;
-        filters.end_time = null;
-        filters.category = null;
-        set_filters(filters);
-        getData()
+        const _filters = {begin_time: null,end_time: null,category: null}
+        setFilters(_filters);
+        const _pagination = {...pagination,page_no:1}
+        setPagination(_pagination)
+        getData(_filters,_pagination)
     };
 
     /**
@@ -124,10 +124,9 @@ const Log = () => {
      * @param current
      */
     const changePageSize = (page_size, current) => {
-        pagination.page_no = 1
-        pagination.page_size = page_size
-        set_pagination(pagination)
-        getData()
+        const _pagination = {...pagination,page_no:1,page_size:page_size}
+        setPagination(pagination)
+        getData(filters,_pagination)
     };
 
     /**
@@ -135,9 +134,9 @@ const Log = () => {
      * @param current
      */
     const changePage = (current) => {
-        pagination.page_no = current
-        set_pagination(pagination)
-        getData()
+        const _pagination = {...pagination,page_no:current}
+        setPagination(_pagination)
+        getData(filters,_pagination)
     };
 
     /**
@@ -146,18 +145,19 @@ const Log = () => {
      * @param dateString
      */
     const onChangeDate = (date, dateString) => {
+        let _filters = {...filters}
         // 为空要单独判断
         if (dateString[0] !== '' && dateString[1] !== ''){
-            filters.begin_time = dateString[0];
-            filters.end_time = dateString[1];
+            _filters.begin_time = dateString[0];
+            _filters.end_time = dateString[1];
         }else{
-            filters.begin_time = null;
-            filters.end_time = null;
+            _filters.begin_time = null;
+            _filters.end_time = null;
         }
-        set_filters(filters)
-        pagination.page_no = 1
-        set_pagination(pagination)
-        getData()
+        setFilters(_filters)
+        const _pagination = {...pagination,page_no:1}
+        setPagination(_pagination)
+        getData(_filters,_pagination)
     };
 
     /**
@@ -165,11 +165,11 @@ const Log = () => {
      * @param value
      */
     const onChangeType = (value) => {
-        filters.category = value;
-        set_filters(filters)
-        pagination.page_no = 1
-        set_pagination(pagination)
-        getData()
+        const _filters = {...filters,category:value}
+        setFilters(_filters)
+        const _pagination = {...pagination,page_no:1}
+        setPagination(_pagination)
+        getData(_filters,_pagination)
     };
 
     /**
@@ -177,7 +177,7 @@ const Log = () => {
      */
     const exportExcel = () => {
         // 在发请求前, 显示loading
-        set_loading(true);
+        setLoading(true);
         let access_token = Storage.get(Storage.ACCESS_KEY)
         let para = {
             type: filters.category,
@@ -196,7 +196,7 @@ const Log = () => {
                 "access_token":access_token
             },
         }).then( async (res) => {
-            set_loading(false);
+            setLoading(false);
             console.log(res)
             let blob = new Blob([res.data]);
             blob.arrayBuffer().then(async buffer => {
@@ -204,7 +204,7 @@ const Log = () => {
                 openNotificationWithIcon("success","导出提示", `${fileName}已经导出到桌面，请及时查阅`)
             })
         }).catch((res) =>{
-            set_loading(false);
+            setLoading(false);
             console.log(res)
             openNotificationWithIcon("error", "错误提示", "导出日志报表失败");
         });
@@ -230,7 +230,7 @@ const Log = () => {
                                 <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
-                                <Button type="primary" htmlType="button" onClick={getData}>
+                                <Button type="primary" htmlType="button" onClick={()=>getData(filters,pagination)}>
                                     <SearchOutlined/>查询
                                 </Button>
                             </Form.Item>

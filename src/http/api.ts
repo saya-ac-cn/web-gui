@@ -42,6 +42,18 @@ export const editFileApi = params => RequestHttp.put(`${backendAPI}/oss/files/fi
 export const downloadFileApi = `${backendAPI}/oss/files/download/`;
 
 
+// 查询单条便笺
+export const memoInfoApi = params => RequestHttp.get(`${backendAPI}/content/memo/${params}`, {});
+// 获取分页便笺
+export const memoPageApi = params => RequestHttp.get(`${backendAPI}/content/memo`, params);
+// 添加便笺
+export const createMemoApi = params => RequestHttp.post(`${backendAPI}/content/memo`, params);
+// 修改便笺
+export const updateMemoApi = params => RequestHttp.put(`${backendAPI}/content/memo`, params);
+// 删除便笺
+export const deleteMemoApi = params => RequestHttp.delete(`${backendAPI}/content/memo/${params}`, {});
+
+
 
 // 获取计划
 export const planApi = params => RequestHttp.get('/frontend/plan/1',params);

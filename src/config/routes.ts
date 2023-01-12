@@ -77,7 +77,7 @@ const routes : Array<Router> = [
         name: '便利贴',
         path: '/memo',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/memo')),
         display: true,
         icon: TagOutlined
     },
