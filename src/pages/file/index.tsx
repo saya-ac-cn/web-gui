@@ -15,7 +15,7 @@ const File = () => {
 
     const [grid,set_grid] = useState([])
     const [pagination,set_pagination] = useState({page_no:1,page_size:10,data_total:0})
-    const [filters,set_filters] = useState({file_name:null,begin_time: null,end_time: null,category: null})
+    const [filters,set_filters] = useState({file_name:null,begin_time: null,end_time: null})
     const [modal,set_modal] = useState(false)
     const [loading,set_loading] = useState(false)
     const organize = Storage.get(Storage.ORGANIZE_KEY)
@@ -135,10 +135,12 @@ const File = () => {
      * 重置查询条件
      */
     const reloadPage = () => {
-        filters.begin_time = null;
-        filters.end_time = null;
-        filters.file_name = null;
-        set_filters(filters);
+        // filters.begin_time = null;
+        // filters.end_time = null;
+        // filters.file_name = null;
+        set_filters({begin_time:null,end_time:null,file_name:null});
+        pagination.page_no = 1
+        set_pagination(pagination)
         getData();
     };
 
@@ -170,16 +172,23 @@ const File = () => {
      * @param dateString
      */
     const onChangeDate = (date, dateString) => {
+        // if (dateString[0] !== '' && dateString[1] !== ''){
+        //     filters.begin_time = dateString[0];
+        //     filters.end_time = dateString[1];
+        // }else{
+        //     filters.begin_time = null;
+        //     filters.end_time = null;
+        // }
         if (dateString[0] !== '' && dateString[1] !== ''){
-            filters.begin_time = dateString[0];
-            filters.end_time = dateString[1];
+            console.log('1',dateString)
+            set_filters({...filters,begin_time:dateString[0],end_time: dateString[1]})
         }else{
-            filters.begin_time = null;
-            filters.end_time = null;
+            console.log('2',dateString)
+            set_filters({...filters,begin_time:null,end_time:null})
         }
-        set_filters(filters)
-        pagination.page_no = 1
-        set_pagination(pagination)
+        // pagination.page_no = 1
+        // set_pagination(pagination)
+        set_pagination({...pagination,page_no:1})
         getData()
     };
 

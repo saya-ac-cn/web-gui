@@ -73,6 +73,8 @@ const Data = () => {
         filters.begin_time = null;
         filters.end_time = null;
         set_filters(filters);
+        pagination.page_no = 1
+        set_pagination(pagination)
         getData()
     };
 
