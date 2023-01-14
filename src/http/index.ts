@@ -55,7 +55,7 @@ class RequestHttp {
             (config: AxiosRequestConfig) => {
                 axiosCanceler.addPending(config);
                 // 需要添加的token 自行设置
-                if (this.access_token){
+                if (this.access_token && '/backend/login' !== config.url){
                     config.headers.access_token = this.access_token;
                 }
                 return config;

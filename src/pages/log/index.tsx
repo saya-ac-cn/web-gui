@@ -85,7 +85,7 @@ const Log = () => {
      * 获取日志数据
      * @returns {Promise<void>}
      */
-    const getData = async (_filters,_pagination) => {
+    const getData = async (_filters = filters,_pagination= pagination) => {
         let para = {
             page_no: _pagination.page_no,
             page_size: _pagination.page_size,
@@ -230,7 +230,7 @@ const Log = () => {
                                 <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
-                                <Button type="primary" htmlType="button" onClick={()=>getData(filters,pagination)}>
+                                <Button type="primary" htmlType="button" onClick={getData}>
                                     <SearchOutlined/>查询
                                 </Button>
                             </Form.Item>
