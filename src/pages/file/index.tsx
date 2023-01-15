@@ -13,11 +13,11 @@ const {RangePicker} = DatePicker;
 const { Dragger } = Upload;
 const File = () => {
 
-    const [grid,set_grid] = useState([])
-    const [pagination,set_pagination] = useState({page_no:1,page_size:10,data_total:0})
-    const [filters,set_filters] = useState({file_name:null,begin_time: null,end_time: null})
-    const [modal,set_modal] = useState(false)
-    const [loading,set_loading] = useState(false)
+    const [grid,setGrid] = useState([])
+    const [pagination,setPagination] = useState({page_no:1,page_size:10,data_total:0})
+    const [filters,setFilters] = useState({file_name:null,begin_time: null,end_time: null})
+    const [modal,setModal] = useState(false)
+    const [loading,setLoading] = useState(false)
     const organize = Storage.get(Storage.ORGANIZE_KEY)
 
     useEffect(()=>{
@@ -109,23 +109,23 @@ const File = () => {
      * 获取文件列表数据
      * @returns {Promise<void>}
      */
-    const getData = async () => {
+    const getData = async (_filters = filters,_pagination= pagination) => {
         let para = {
-            page_no: pagination.page_no,
-            page_size: pagination.page_size,
-            file_name: filters.file_name,
-            begin_time: filters.begin_time,
-            end_time: filters.end_time,
+            page_no: _pagination.page_no,
+            page_size: _pagination.page_size,
+            file_name: _filters.file_name,
+            begin_time: _filters.begin_time,
+            end_time: _filters.end_time,
         };
         // 在发请求前, 显示loading
-        set_loading(true);
+        setLoading(true);
         // 发异步ajax请求, 获取数据
         const {msg, code, data} = await filePageApi(para);
         // 在请求完成后, 隐藏loading
-        set_loading(false);
+        setLoading(false);
         if (code === 0) {
-            set_grid(data.records);
-            set_pagination({...pagination,data_total: data.total_row})
+            setGrid(data.records);
+            setPagination({..._pagination,data_total: data.total_row})
         } else {
             openNotificationWithIcon("error", "错误提示", msg);
         }
@@ -135,13 +135,11 @@ const File = () => {
      * 重置查询条件
      */
     const reloadPage = () => {
-        // filters.begin_time = null;
-        // filters.end_time = null;
-        // filters.file_name = null;
-        set_filters({begin_time:null,end_time:null,file_name:null});
-        pagination.page_no = 1
-        set_pagination(pagination)
-        getData();
+        const _filters = {begin_time: null,end_time: null,file_name: null}
+        setFilters(_filters);
+        const _pagination = {...pagination,page_no:1}
+        setPagination(_pagination)
+        getData(_filters,_pagination)
     };
 
     /**
@@ -150,10 +148,9 @@ const File = () => {
      * @param current
      */
     const changePageSize = (page_size, current) => {
-        pagination.page_no = 1
-        pagination.page_size = page_size
-        set_pagination(pagination)
-        getData()
+        const _pagination = {...pagination,page_no:1,page_size:page_size}
+        setPagination(pagination)
+        getData(filters,_pagination)
     };
 
     /**
@@ -161,9 +158,9 @@ const File = () => {
      * @param current
      */
     const changePage = (current) => {
-        pagination.page_no = current
-        set_pagination(pagination)
-        getData()
+        const _pagination = {...pagination,page_no:current}
+        setPagination(_pagination)
+        getData(filters,_pagination)
     };
 
     /**
@@ -172,24 +169,19 @@ const File = () => {
      * @param dateString
      */
     const onChangeDate = (date, dateString) => {
-        // if (dateString[0] !== '' && dateString[1] !== ''){
-        //     filters.begin_time = dateString[0];
-        //     filters.end_time = dateString[1];
-        // }else{
-        //     filters.begin_time = null;
-        //     filters.end_time = null;
-        // }
+        let _filters = {...filters}
+        // 为空要单独判断
         if (dateString[0] !== '' && dateString[1] !== ''){
-            console.log('1',dateString)
-            set_filters({...filters,begin_time:dateString[0],end_time: dateString[1]})
+            _filters.begin_time = dateString[0];
+            _filters.end_time = dateString[1];
         }else{
-            console.log('2',dateString)
-            set_filters({...filters,begin_time:null,end_time:null})
+            _filters.begin_time = null;
+            _filters.end_time = null;
         }
-        // pagination.page_no = 1
-        // set_pagination(pagination)
-        set_pagination({...pagination,page_no:1})
-        getData()
+        setFilters(_filters)
+        const _pagination = {...pagination,page_no:1}
+        setPagination(_pagination)
+        getData(_filters,_pagination)
     };
 
     /**
@@ -198,10 +190,11 @@ const File = () => {
      */
     const fileInputChange = (event) => {
         const value = event.target.value;
-        filters.file_name = value;
-        set_filters(filters)
-        pagination.page_no = 1
-        set_pagination(pagination)
+        const _filters = {...filters,file_name:value}
+        setFilters(_filters)
+        const _pagination = {...pagination,page_no:1}
+        setPagination(_pagination)
+        getData(_filters,_pagination)
     };
 
     /**
@@ -209,11 +202,11 @@ const File = () => {
      */
     const deleteFile = async (para) => {
         // 在发请求前, 显示loading
-        set_loading(true);
+        setLoading(true);
         // 发异步ajax请求, 获取数据
         const {msg, code} = await deleteFileApi(para);
         // 在请求完成后, 隐藏loading
-        set_loading(false);
+        setLoading(false);
         if (code === 0) {
             openNotificationWithIcon("success", "操作结果", "删除成功");
             getData();
@@ -242,7 +235,7 @@ const File = () => {
      */
     const downloadFile = (row) => {
         // 在发请求前, 显示loading
-        set_loading(true);
+        setLoading(true);
         let access_token = Storage.get(Storage.ACCESS_KEY)
         axios({
             method: "GET",
@@ -254,14 +247,14 @@ const File = () => {
                 "access_token":access_token
             },
         }).then(function (res) {
-            set_loading(false);
+            setLoading(false);
             let blob = new Blob([res.data]);
             blob.arrayBuffer().then(async buffer => {
                 await writeBinaryFile({path: row.file_name, contents: buffer}, {dir: BaseDirectory.Desktop});
                 openNotificationWithIcon("success","导出提示", `${row.file_name}已经导出到桌面，请及时查阅`)
             })
         }).catch(res => {
-            set_loading(false);
+            setLoading(false);
             openNotificationWithIcon("error", "错误提示", "下载文件失败"+res);
         });
     };
@@ -288,11 +281,11 @@ const File = () => {
             onOk: async () => {
                 let para = { id: item.id, status: sendStatus };
                 // 在发请求前, 显示loading
-                set_loading(true);
+                setLoading(true);
                 // 发异步ajax请求, 获取数据
                 const {msg, code} = await editFileApi(para);
                 // 在请求完成后, 隐藏loading
-                set_loading(false);
+                setLoading(false);
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "修改成功");
                     getData();
@@ -331,7 +324,7 @@ const File = () => {
                                 </Button>
                             </Form.Item>
                             <Form.Item>
-                                <Button type="primary" htmlType="button" onClick={()=>set_modal(true)}>
+                                <Button type="primary" htmlType="button" onClick={()=>setModal(true)}>
                                     <CloudUploadOutlined/>上传
                                 </Button>
                             </Form.Item>
@@ -350,8 +343,8 @@ const File = () => {
                     <Modal
                         title="上传文件"
                         open={modal}
-                        onOk={()=>set_modal(false)}
-                        onCancel={()=>set_modal(false)}>
+                        onOk={()=>setModal(false)}
+                        onCancel={()=>setModal(false)}>
                         <Dragger {...uploadConfig}>
                             <p className="ant-upload-drag-icon">
                                 <InboxOutlined />

@@ -10,10 +10,10 @@ import {dbDumpPageApi} from "@/http/api"
 const {RangePicker} = DatePicker;
 const Data = () => {
 
-    const [grid,set_grid] = useState([])
-    const [pagination,set_pagination] = useState({page_no:1,page_size:10,data_total:0})
-    const [filters,set_filters] = useState({begin_time: null,end_time: null})
-    const [loading,set_loading] = useState(false)
+    const [grid,setGrid] = useState([])
+    const [pagination,setPagination] = useState({page_no:1,page_size:10,data_total:0})
+    const [filters,setFilters] = useState({begin_time: null,end_time: null})
+    const [loading,setLoading] = useState(false)
 
     useEffect(()=>{
         getData()
@@ -45,22 +45,22 @@ const Data = () => {
      * 获取备份数据
      * @returns {Promise<void>}
      */
-    const getData = async () => {
+    const getData = async (_filters = filters,_pagination= pagination) => {
         let para = {
-            page_no: pagination.page_no,
-            page_size: pagination.page_size,
-            begin_time: filters.begin_time,
-            end_time: filters.end_time
+            page_no: _pagination.page_no,
+            page_size: _pagination.page_size,
+            begin_time: _filters.begin_time,
+            end_time: _filters.end_time,
         };
         // 在发请求前, 显示loading
-        set_loading(true)
+        setLoading(true)
         // 发异步ajax请求, 获取数据
         const {msg, code, data} = await dbDumpPageApi(para);
         // 在请求完成后, 隐藏loading
-        set_loading(false)
+        setLoading(false)
         if (code === 0) {
-            set_grid(data.records);
-            set_pagination({...pagination,data_total: data.total_row})
+            setGrid(data.records);
+            setPagination({..._pagination,data_total: data.total_row})
         } else {
             openNotificationWithIcon("error", "错误提示", msg);
         }
@@ -70,12 +70,11 @@ const Data = () => {
      * 重置查询条件
      */
     const reloadPage = () => {
-        filters.begin_time = null;
-        filters.end_time = null;
-        set_filters(filters);
-        pagination.page_no = 1
-        set_pagination(pagination)
-        getData()
+        const _filters = {begin_time: null,end_time: null}
+        setFilters(_filters);
+        const _pagination = {...pagination,page_no:1}
+        setPagination(_pagination)
+        getData(_filters,_pagination)
     };
 
     /**
@@ -84,10 +83,9 @@ const Data = () => {
      * @param current
      */
     const changePageSize = (page_size, current) => {
-        pagination.page_no = 1
-        pagination.page_size = page_size
-        set_pagination(pagination)
-        getData()
+        const _pagination = {...pagination,page_no:1,page_size:page_size}
+        setPagination(pagination)
+        getData(filters,_pagination)
     };
 
     /**
@@ -95,9 +93,9 @@ const Data = () => {
      * @param current
      */
     const changePage = (current) => {
-        pagination.page_no = current
-        set_pagination(pagination)
-        getData()
+        const _pagination = {...pagination,page_no:current}
+        setPagination(_pagination)
+        getData(filters,_pagination)
     };
 
     /**
@@ -106,18 +104,19 @@ const Data = () => {
      * @param dateString
      */
     const onChangeDate = (date, dateString) => {
+        let _filters = {...filters}
         // 为空要单独判断
         if (dateString[0] !== '' && dateString[1] !== ''){
-            filters.begin_time = dateString[0];
-            filters.end_time = dateString[1];
+            _filters.begin_time = dateString[0];
+            _filters.end_time = dateString[1];
         }else{
-            filters.begin_time = null;
-            filters.end_time = null;
+            _filters.begin_time = null;
+            _filters.end_time = null;
         }
-        set_filters(filters)
-        pagination.page_no = 1
-        set_pagination(pagination)
-        getData()
+        setFilters(_filters)
+        const _pagination = {...pagination,page_no:1}
+        setPagination(_pagination)
+        getData(_filters,_pagination)
     };
 
     return (
