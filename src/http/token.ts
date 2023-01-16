@@ -9,7 +9,12 @@ import {openLoginWindow} from '@/windows/actions'
 
 
 // 刷新token
-export const doRefreshToken = () => {
+export const doRefreshToken = (url: string) => {
+    if ('/backend/login' === url){
+        Storage.removeAll();
+        return new Promise((resolve, reject) => {resolve(null)})
+    }
+
     return new Promise((resolve, reject) => {
         // 当前缓存中的token
         let access_token = Storage.get(Storage.ACCESS_KEY)

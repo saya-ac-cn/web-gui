@@ -42,10 +42,10 @@ const routes : Array<Router> = [
         icon: ProfileOutlined
     },
     {
-        name: '消息动态',
+        name: '动态说说',
         path: '/news',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/memory/news')),
         display: true,
         icon: NotificationOutlined
     },
@@ -59,9 +59,9 @@ const routes : Array<Router> = [
     },
     {
         name: '待提醒项',
-        path: '/plan',
+        path: '/activity',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/plan/activity')),
         display: true,
         icon: ScheduleOutlined
     },
@@ -69,7 +69,7 @@ const routes : Array<Router> = [
         name: '已提醒项',
         path: '/archive',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/plan/archive')),
         display: true,
         icon: ScheduleOutlined
     },
@@ -77,7 +77,7 @@ const routes : Array<Router> = [
         name: '便利贴',
         path: '/memo',
         exact: true,
-        element: lazy(() => import('../pages/memo')),
+        element: lazy(() => import('../pages/memory/memo')),
         display: true,
         icon: TagOutlined
     },

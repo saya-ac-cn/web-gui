@@ -54,6 +54,36 @@ export const updateMemoApi = params => RequestHttp.put(`${backendAPI}/content/me
 export const deleteMemoApi = params => RequestHttp.delete(`${backendAPI}/content/memo/${params}`, {});
 
 
+// 分页获取当前活跃的计划提醒
+export const activityPlanPageApi = params => RequestHttp.get(`${backendAPI}/system/plan/page`, params);
+// 添加计划提醒
+export const createPlanApi = params => RequestHttp.post(`${backendAPI}/system/plan`, params);
+// 修改计划提醒
+export const updatePlanApi = params => RequestHttp.put(`${backendAPI}/system/plan`, params);
+// 删除计划提醒
+export const deletePlanApi = params => RequestHttp.delete(`${backendAPI}/system/plan/${params}`, {});
+// 提前完成提醒事项
+export const advanceFinishPlanApi = params => RequestHttp.put(`${backendAPI}/system/plan/finish/${params}`, {});
+// 分页查询已提醒过的计划
+export const archivePlanPageApi = params => RequestHttp.get(`${backendAPI}/system/archive/plan/page`, params);
+// 修改归档的提醒事项
+export const updateArchivePlanApi = params => RequestHttp.put(`${backendAPI}/system/archive/plan`, params);
+// 删除归档的提醒事项
+export const deleteArchivePlanApi = params => RequestHttp.delete(`${backendAPI}/system/archive/plan/${params}`, {});
+
+// 上传Base64图片
+export const uploadBase64PictureApi = `${backendAPI}/oss/picture/base64`;
+
+// 获取动态
+export const newsPageApi = params => RequestHttp.get(`${backendAPI}/content/news`, params);
+// 发布动态
+export const createNewsApi = params => RequestHttp.post(`${backendAPI}/content/news`, params);
+// 删除动态
+export const deleteNewsApi = params => RequestHttp.delete(`${backendAPI}/content/news/${params}`, {});
+// 查询动态
+export const newsInfoApi = params => RequestHttp.get(`${backendAPI}/content/news/${params}`, {});
+// 修改动态
+export const editNewsApi = params => RequestHttp.put(`${backendAPI}/content/news`, params);
 
 // 获取计划
 export const planApi = params => RequestHttp.get('/frontend/plan/1',params);

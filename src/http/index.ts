@@ -99,23 +99,23 @@ class RequestHttp {
 
     // * 常用请求方法封装
     async get<T>(url: string, params?: any, _object = {}): Promise<AxiosResponse<any>> {
-        this.access_token = await doRefreshToken();
+        this.access_token = await doRefreshToken(url);
         //console.log(this.access_token);
         return this.service.get(url, {params, ..._object});
     }
     async post<T>(url: string, params?: object, _object = {}): Promise<AxiosResponse<any>> {
         // 判断是否需要刷新token
-        this.access_token = await doRefreshToken();
+        this.access_token = await doRefreshToken(url);
         //console.log(this.access_token);
         return this.service.post(url, params, _object);
     }
     async put<T>(url: string, params?: object, _object = {}): Promise<AxiosResponse<any>> {
-        this.access_token = await doRefreshToken();
+        this.access_token = await doRefreshToken(url);
         //console.log(this.access_token);
         return this.service.put(url, params, _object);
     }
     async delete<T>(url: string, params?: any, _object = {}): Promise<AxiosResponse<any>> {
-        this.access_token = await doRefreshToken();
+        this.access_token = await doRefreshToken(url);
         //console.log(this.access_token);
         return this.service.delete(url, {params, ..._object});
     }
