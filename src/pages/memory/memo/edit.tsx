@@ -11,7 +11,7 @@ const formItemLayout = {
 
 const EditMemo = (props,ref) => {
 
-    const [newsForm] = Form.useForm();
+    const [memoForm] = Form.useForm();
     const [memoId, setMemoId] = useState(null);
     const [open, setOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
@@ -26,12 +26,11 @@ const EditMemo = (props,ref) => {
      * @param val
      */
     const handleDisplay = (val) => {
-        console.log(val)
         if(val){
             setMemoId(val.id)
-            newsForm.setFieldsValue(val);
+            memoForm.setFieldsValue({title:val.title, content:val.content});
         }else{
-            newsForm.setFieldsValue({'title':null, 'content':null});
+            memoForm.setFieldsValue({title:null, content:null});
         }
         setOpen(true);
     };
@@ -44,7 +43,7 @@ const EditMemo = (props,ref) => {
      * 响应用户提交事件
      */
     const handleSubmit = () => {
-        newsForm.validateFields().then((values) => {
+        memoForm.validateFields().then((values) => {
             if(memoId){
                 // 执行修改
                 values.id = memoId;
@@ -115,7 +114,7 @@ const EditMemo = (props,ref) => {
 
     return (
         <Modal title={memoId ? '编辑便利贴':'添加便利贴'} open={open} confirmLoading={confirmLoading} maskClosable={false} okText='保存' onOk={handleSubmit} onCancel={handleCancel}>
-            <Form {...formItemLayout} name='便利贴表单' form={newsForm}>
+            <Form {...formItemLayout} name='便利贴表单' form={memoForm}>
                 <Form.Item label="标题名：" {...formItemLayout} getValueFromEvent={(e) => clearTrimValueEvent(e.target.value)} name='title' rules={[{required: true, message: '请输入便利贴标题'}, {min: 2, message: '长度在 2 到 15 个字符'}, {max: 15, message: '长度在 2 到 15 个字符'}]}>
                     <Input placeholder='请输入标题'/>
                 </Form.Item>

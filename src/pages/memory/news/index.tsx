@@ -1,22 +1,23 @@
-import {Button, Col, DatePicker, Form, Input, Modal, Table} from "antd";
-import moment from "moment";
-import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined} from "@ant-design/icons";
-import {disabledDate, extractUserName} from "@/utils/var"
-import React, {useEffect, useRef, useState} from "react";
+import React, {Component, useEffect, useRef, useState} from 'react';
+import {Button, Col, Table, DatePicker, Input, Form, Modal, Tag} from "antd";
+import {deleteNewsApi, newsPageApi} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
-import {deleteMemoApi, memoInfoApi, memoPageApi} from "@/http/api"
+import moment from 'moment';
+import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined} from "@ant-design/icons";
+import {disabledDate, extractUserName} from "@/utils/var";
 import Storage from "@/utils/storage";
-import MemoFrom from "./edit";
+import EditNews from "./edit";
 
 const {RangePicker} = DatePicker;
-const Memo = () => {
+const News = () =>  {
 
     const editRef = useRef();
 
     const [grid,setGrid] = useState([])
     const [pagination,setPagination] = useState({page_no:1,page_size:10,data_total:0})
-    const [filters,setFilters] = useState({title:null,begin_time: null,end_time: null})
+    const [filters,setFilters] = useState({topic:null,begin_time: null,end_time: null})
     const [loading,setLoading] = useState(false)
+    const tagColor = ['magenta', 'red', 'volcano', 'orange', 'gold', 'lime', 'green', 'cyan', 'blue', 'geekblue', 'purple']
     const organize = Storage.get(Storage.ORGANIZE_KEY)
 
     useEffect(()=>{
@@ -28,13 +29,24 @@ const Memo = () => {
      */
     const columns = [
         {
-            title: '标题',
-            dataIndex: 'title', // 显示数据对应的属性名
-        },
-        {
-            title: '创建者',
+            title: '作者',
             dataIndex: 'source', // 显示数据对应的属性名
             render:(value,row) => (extractUserName(organize, row.source))
+        },
+        {
+            title: '标题',
+            dataIndex: 'topic', // 显示数据对应的属性名
+        },
+        {
+            title: '标签',
+            render: (value, row) => {
+                const tags = row.label === null ? [] : (row.label).split(';')
+                if (tags.length > 0) {
+                    return tags.map(forTagMap)
+                } else {
+                    return ''
+                }
+            },
         },
         {
             title: '创建时间',
@@ -45,35 +57,47 @@ const Memo = () => {
             dataIndex: 'update_time', // 显示数据对应的属性名
         },
         {
-            title: '操作',
-            align:'center',
+            title: '管理',
             render: (text, record) => (
                 <div>
-                    <Button type="primary" size="small" onClick={() => handleModalEdit(record)} shape="circle" icon={<EditOutlined/>}/>
+                    <Button type="primary" size="small" onClick={() => handleModalOpen(record.id)} shape="circle" icon={<EditOutlined/>}/>
                     &nbsp;
-                    <Button type="danger" size="small" onClick={() => handleDellMemo(record)} shape="circle" icon={<DeleteOutlined/>}/>
+                    <Button type="danger" size="small" onClick={() => handleDellNews(record)}  shape="circle" icon={<DeleteOutlined/>}/>
                 </div>
             ),
-        }
+        },
     ]
 
     /**
-     * 获取便利贴列表数据
+     * 生成tag标签
+     * @param tag
+     * @returns {JSX.Element}
+     */
+    const forTagMap = tag => {
+        const tagElem = (
+            <Tag color={tagColor[Math.floor(Math.random() * 10)]}>
+                {tag}
+            </Tag>
+        );
+        return (<span key={tag} style={{display: 'inline-block'}}>{tagElem}</span>);
+    };
+
+    /**
+     * 获取动态列表数据
      * @returns {Promise<void>}
      */
     const getData = async (_filters = filters,_pagination= pagination) => {
         let para = {
-            title: _filters.title,
+            topic: _filters.topic,
             page_no: _pagination.page_no,
             page_size: _pagination.page_size,
             begin_time: _filters.begin_time,
             end_time: _filters.end_time
         };
-        console.log('getData',para)
         // 在发请求前, 显示loading
-        setLoading(true)
+        setLoading(true);
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await memoPageApi(para);
+        const {msg, code, data} = await newsPageApi(para).catch(()=>{setLoading(false)});
         // 在请求完成后, 隐藏loading
         setLoading(false)
         if (code === 0) {
@@ -85,10 +109,34 @@ const Memo = () => {
     };
 
     /**
+     * 删除指定动态
+     * @param item
+     */
+    const handleDellNews = (item) => {
+        Modal.confirm({
+            title: '删除确认',
+            content: `确认删除主题为:${item.topic}的动态吗?`,
+            onOk: async () => {
+                // 在发请求前, 显示loading
+                setLoading(true);
+                const {msg, code} = await deleteNewsApi(item.id).catch(()=>{setLoading(false)});
+                // 在请求完成后, 隐藏loading
+                setLoading(false)
+                if (code === 0) {
+                    openNotificationWithIcon("success", "操作结果", "删除成功");
+                    getData();
+                } else {
+                    openNotificationWithIcon("error", "错误提示", msg);
+                }
+            }
+        })
+    };
+
+    /**
      * 重置查询条件
      */
     const reloadPage = () => {
-        const _filters = {begin_time: null,end_time: null,title: null}
+        const _filters = {begin_time: null,end_time: null,topic: null}
         setFilters(_filters);
         const _pagination = {...pagination,page_no:1}
         setPagination(_pagination)
@@ -137,13 +185,14 @@ const Memo = () => {
         getData(_filters,_pagination)
     };
 
+
     /**
-     * 双向绑定用户查询标题
+     * 双向绑定用户查询主题
      * @param event
      */
-    const titleInputChange = (event) => {
+    const topicInputChange = (event) => {
         const value = event.target.value;
-        const _filters = {...filters,title:value}
+        const _filters = {...filters,topic:value}
         setFilters(_filters)
         const _pagination = {...pagination,page_no:1}
         setPagination(_pagination)
@@ -153,67 +202,24 @@ const Memo = () => {
     /**
      * 显示添加的弹窗
      */
-    const handleModalAdd = () => {
-        editRef.current.handleDisplay(null);
-    };
-
-    /**
-     * 显示修改的弹窗
-     * @param value
-     * @returns {Promise<void>}
-     */
-    const handleModalEdit = async (value) => {
-        setLoading(true)
-        const {msg, code, data} = await memoInfoApi(value.id).catch(()=>setLoading(false));
-        setLoading(false)
-        if (code === 0) {
-            editRef.current.handleDisplay(data);
-        } else {
-            openNotificationWithIcon("error", "错误提示", msg);
-        }
-    };
-
-
-    /**
-     * 删除指定便利贴
-     * @param item
-     */
-    const handleDellMemo = (item) => {
-        Modal.confirm({
-            title: '删除确认',
-            content: `确认删除标题为:${item.title}的便利贴吗?`,
-            cancelText: '再想想',
-            okText: '不要啦',
-            onOk: async () => {
-                // 在发请求前, 显示loading
-                setLoading(true)
-                const {msg, code} = await deleteMemoApi(item.id).catch(()=>setLoading(false));
-                // 在请求完成后, 隐藏loading
-                setLoading(false);
-                if (code === 0) {
-                    openNotificationWithIcon("success", "操作结果", "删除成功");
-                    getData();
-                } else {
-                    openNotificationWithIcon("error", "错误提示", msg);
-                }
-            }
-        })
+    const handleModalOpen = (val:any) => {
+        editRef.current.handleDisplay(val);
     };
 
     return (
         <div>
             <div className='child-container'>
                 <div className='header-tools'>
-                    便利贴
+                    动态说说
                 </div>
                 <div className='child-content'>
                     <Col span={24} className="toolbar">
                         <Form layout="inline">
-                            <Form.Item label="标题:">
-                                <Input type='text' value={filters.title} allowClear={true} onChange={e=>titleInputChange(e)}
-                                       placeholder='按标题检索'/>
+                            <Form.Item label="主题:">
+                                <Input type='text' value={filters.topic} allowClear={true} onChange={topicInputChange}
+                                       placeholder='按主题检索'/>
                             </Form.Item>
-                            <Form.Item label="填写时间:">
+                            <Form.Item label="发布时间:">
                                 <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
@@ -227,8 +233,8 @@ const Memo = () => {
                                 </Button>
                             </Form.Item>
                             <Form.Item>
-                                <Button type="primary" htmlType="button" onClick={handleModalAdd}>
-                                    <PlusOutlined/>创建
+                                <Button type="primary" htmlType="button" onClick={() => handleModalOpen(null)}>
+                                    <PlusOutlined/>发布
                                 </Button>
                             </Form.Item>
                         </Form>
@@ -242,12 +248,13 @@ const Memo = () => {
                                    onShowSizeChange: (current, page_size) => changePageSize(page_size, current),
                                    onChange: changePage,
                                }}/>
-                        <MemoFrom ref={editRef} refreshPage={getData}/>
                     </Col>
+                    <EditNews ref={editRef} refreshPage={getData}/>
                 </div>
             </div>
         </div>
     )
 }
 
-export default Memo
+// 对外暴露
+export default News;

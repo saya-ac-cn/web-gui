@@ -60,6 +60,18 @@ npm run tauri dev
 yarn tauri info
 ```
 
+解决错误
+```text
+
+antd报错Instance created by `useForm` isnot connected to any Form element. Forget to pass `form` prop
+
+提示：使用了Modal组件
+例如：我在Form外层包裹了Modal（Drawer同理）组件，在调用form的实例时，Modal内部的组件并未渲染，才导致了如此错误。
+
+强制Modal渲染 通过antd提供的forceRender属性即可
+
+```
+
 # 参考
 1、tauri.conf.json 配置 https://zhuanlan.zhihu.com/p/536675879
 
