@@ -53,7 +53,7 @@ const routes : Array<Router> = [
         name: '笔记簿',
         path: '/note',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/memory/note')),
         display: true,
         icon: FileTextOutlined
     },

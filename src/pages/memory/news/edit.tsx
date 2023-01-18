@@ -1,6 +1,6 @@
 import React, {useState, forwardRef, useImperativeHandle, useRef, useEffect} from 'react';
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Tag, Drawer, Form, Input,Space } from 'antd';
+import {Button, Tag, Drawer, Form, Input, Space, InputRef} from 'antd';
 
 import {clearTrimValueEvent} from "@/utils/string";
 import {createNewsApi, editNewsApi, newsInfoApi} from "@/http/api"
@@ -17,6 +17,7 @@ const EditNews = (props,ref) => {
 
     //操作dom节点
     const editorRef = useRef<any>();
+    const labelRef = useRef<InputRef>();
 
     const [newsForm] = Form.useForm();
     const [news,setNews] = useState({id:null,topic: null,label: [],content: null})
@@ -30,6 +31,12 @@ const EditNews = (props,ref) => {
     useImperativeHandle(ref,()=>({
         handleDisplay
     }))
+
+    useEffect(() => {
+        if (labelVisible) {
+            labelRef.current?.focus();
+        }
+    }, [labelVisible]);
 
     /**
      * 初始化数据
@@ -139,14 +146,14 @@ const EditNews = (props,ref) => {
             } else {
                 label = null
             }
-            let para = {topic: values.topic,label: label,content: content};
+            let param = {topic: values.topic,label: label,content: content};
             if (news.id){
                 // 执行修改
-                para.id = news.id;
-                updateNews(para)
+                param.id = news.id;
+                updateNews(param)
             } else{
                 // 执行添加
-                createNews(para)
+                createNews(param)
             }
         }).catch(e => {
             console.log("修改或添加动态说说错误",e)
@@ -204,6 +211,7 @@ const EditNews = (props,ref) => {
                     </div>
                     {labelVisible && (
                         <Input
+                            ref={labelRef}
                             type="text"
                             size="small"
                             style={{ width: 78 }}

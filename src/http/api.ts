@@ -85,5 +85,26 @@ export const newsInfoApi = params => RequestHttp.get(`${backendAPI}/content/news
 // 修改动态
 export const editNewsApi = params => RequestHttp.put(`${backendAPI}/content/news`, params);
 
+
+// 创建笔记簿
+export const createNoteBookApi = params => RequestHttp.post(`${backendAPI}/content/notebook`, params);
+// 修改笔记簿
+export const updateNoteBookApi = params => RequestHttp.put(`${backendAPI}/content/notebook`, params);
+// 删除笔记簿
+export const deleteNoteBookApi = params => RequestHttp.delete(`${backendAPI}/content/notebook/${params}`, {});
+// 获取笔记簿
+export const noteBookListApi = () => RequestHttp.get(`${backendAPI}/content/notebook`, {});
+
+// 创建笔记
+export const createNoteApi = params => RequestHttp.post(`${backendAPI}/content/notes`, params);
+// 修改笔记
+export const updateNoteApi = params => RequestHttp.put(`${backendAPI}/content/notes`, params);
+// 删除笔记
+export const deleteNoteApi = params => RequestHttp.delete(`${backendAPI}/content/notes/${params}`, {});
+// 获取笔记
+export const notePageApi = params => RequestHttp.get(`${backendAPI}/content/notes`, params);
+// 查询笔记详情
+export const noteInfoApi = params => RequestHttp.get(`${backendAPI}/content/notes/${params}`, {});
+
 // 获取计划
 export const planApi = params => RequestHttp.get('/frontend/plan/1',params);
