@@ -29,7 +29,7 @@ const routes : Array<Router> = [
         name: '记账本',
         path: '/journal',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/financial/journal')),
         display: true,
         icon: MoneyCollectOutlined
     },

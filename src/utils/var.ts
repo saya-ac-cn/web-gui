@@ -21,7 +21,7 @@ export const isEmptyObject = (data) => {
  * @param n 保留几位小数
  * @returns {string}
  */
-export const formatMoney = (s, n) => {
+export const formatMoney = (s, n=2) => {
     n = typeof(n)==="undefined"?2:n;
     n = n > 0 && n <= 20 ? n : 2;
     s = parseFloat((s + "").replace(/[^\d.-]/g, "")).toFixed(n) + "";

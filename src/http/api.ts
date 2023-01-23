@@ -85,7 +85,6 @@ export const newsInfoApi = params => RequestHttp.get(`${backendAPI}/content/news
 // 修改动态
 export const editNewsApi = params => RequestHttp.put(`${backendAPI}/content/news`, params);
 
-
 // 创建笔记簿
 export const createNoteBookApi = params => RequestHttp.post(`${backendAPI}/content/notebook`, params);
 // 修改笔记簿
@@ -105,6 +104,38 @@ export const deleteNoteApi = params => RequestHttp.delete(`${backendAPI}/content
 export const notePageApi = params => RequestHttp.get(`${backendAPI}/content/notes`, params);
 // 查询笔记详情
 export const noteInfoApi = params => RequestHttp.get(`${backendAPI}/content/notes/${params}`, {});
+
+// 查询货币列表
+export const monetaryListApi = () => RequestHttp.get(`${backendAPI}/financial/dictionary/monetary`, {});
+// 获取所有的支付类别
+export const paymentMeansListApi = () => RequestHttp.get(`${backendAPI}/financial/dictionary/payment/means`, {});
+// 获取所有的交易摘要
+export const abstractsApi = params => RequestHttp.get(`${backendAPI}/financial/dictionary/abstracts`, params);
+// 获取财政流水
+export const getTransactionList = params => RequestHttp.get(`${backendAPI}/financial/journal`, params);
+// 流水列表
+export const generalJournalListApi = params => RequestHttp.get(`${backendAPI}/financial/general/journal`, params);
+// 财政申报
+export const addJournalApi = params => RequestHttp.post(`${backendAPI}/financial/journal`, params);
+// 修改流水
+export const updateJournalApi = params => RequestHttp.put(`${backendAPI}/financial/journal`, params);
+// 删除流水
+export const deleteJournalApi = params => RequestHttp.delete(`${backendAPI}/financial/journal/${params}`, {});
+// 导出流水
+export const JournalExcelApi = `${backendAPI}/financial/journal/excel`;
+// 导出流水明细
+export const generalJournalExcelApi = `${backendAPI}/financial/general/journal/excel`;
+// 添加流水明细
+export const addGeneralJournalApi = params => RequestHttp.post(`${backendAPI}/financial/general/journal`, params);
+// 修改流水明细
+export const updateGeneralJournalApi = params => RequestHttp.put(`${backendAPI}/financial/general/journal`, params);
+// 删除流水明细
+export const deleteGeneralJournalApi = params => RequestHttp.delete(`${backendAPI}/financial/general/journal/${params}`, {});
+// 按天统计流水
+export const totalJournalForDayApi = params => RequestHttp.get(`${backendAPI}/financial/journal/day`, params);
+// 导出按天统计的报表
+export const journalForDayExcelApi = `${backendAPI}/financial/journal/collect/excel`;
+
 
 // 获取计划
 export const planApi = params => RequestHttp.get('/frontend/plan/1',params);
