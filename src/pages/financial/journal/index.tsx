@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     deleteJournalApi,
     JournalExcelApi,
@@ -23,13 +23,14 @@ import axios from "axios";
 import {disabledDate, extractUserName, formatMoney} from '@/utils/var'
 import Storage from "@/utils/storage";
 import {BaseDirectory, writeBinaryFile} from "@tauri-apps/api/fs";
+import JournalDetail from './detail'
 
 const {RangePicker} = DatePicker;
 const {Option} = Select;
 
 const Journal = () => {
 
-    //journalDetailRef = React.createRef();
+    const detailRef = useRef();
     //journalDeclareRef = React.createRef();
     //journalRenewRef = React.createRef();
 
@@ -283,7 +284,7 @@ const Journal = () => {
      */
     const handleAddModal = () => {
         // 触发子组件的调用
-        //_this.journalDeclareRef.handleDisplay()
+        //detailRef.current.handleDisplay()
     };
 
     /**
@@ -292,7 +293,7 @@ const Journal = () => {
     const openViewModal = (value) => {
         value.source_name = extractUserName(organize, value.source)
         // 触发子组件的调用
-        //_this.journalDetailRef.handleDisplay(value)
+        detailRef.current.handleDisplay(value)
     };
 
     /**
@@ -465,6 +466,7 @@ const Journal = () => {
                                    onChange: changePage,
                                }}/>
                     </Col>
+                    <JournalDetail ref={detailRef}/>
                 </div>
             </div>
         </div>
