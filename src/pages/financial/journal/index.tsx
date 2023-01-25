@@ -24,13 +24,15 @@ import {disabledDate, extractUserName, formatMoney} from '@/utils/var'
 import Storage from "@/utils/storage";
 import {BaseDirectory, writeBinaryFile} from "@tauri-apps/api/fs";
 import JournalDetail from './detail'
-
+import JournalDeclare from './declare'
 const {RangePicker} = DatePicker;
 const {Option} = Select;
 
 const Journal = () => {
 
     const detailRef = useRef();
+    const declareRef = useRef();
+
     //journalDeclareRef = React.createRef();
     //journalRenewRef = React.createRef();
 
@@ -284,7 +286,7 @@ const Journal = () => {
      */
     const handleAddModal = () => {
         // 触发子组件的调用
-        //detailRef.current.handleDisplay()
+        declareRef.current.handleDisplay()
     };
 
     /**
@@ -467,6 +469,7 @@ const Journal = () => {
                                }}/>
                     </Col>
                     <JournalDetail ref={detailRef}/>
+                    <JournalDeclare ref={declareRef} refreshPage={getData}/>
                 </div>
             </div>
         </div>

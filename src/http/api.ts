@@ -110,7 +110,7 @@ export const monetaryListApi = () => RequestHttp.get(`${backendAPI}/financial/di
 // 获取所有的支付类别
 export const paymentMeansListApi = () => RequestHttp.get(`${backendAPI}/financial/dictionary/payment/means`, {});
 // 获取所有的交易摘要
-export const abstractsApi = params => RequestHttp.get(`${backendAPI}/financial/dictionary/abstracts`, params);
+export const abstractsApi = () => RequestHttp.get(`${backendAPI}/financial/dictionary/abstracts`, {});
 // 获取财政流水
 export const getTransactionList = params => RequestHttp.get(`${backendAPI}/financial/journal`, params);
 // 流水列表
