@@ -25,6 +25,7 @@ import Storage from "@/utils/storage";
 import {BaseDirectory, writeBinaryFile} from "@tauri-apps/api/fs";
 import JournalDetail from './detail'
 import JournalDeclare from './declare'
+import JournalRenew from './renew'
 const {RangePicker} = DatePicker;
 const {Option} = Select;
 
@@ -32,9 +33,8 @@ const Journal = () => {
 
     const detailRef = useRef();
     const declareRef = useRef();
+    const renewRef = useRef();
 
-    //journalDeclareRef = React.createRef();
-    //journalRenewRef = React.createRef();
 
     const [grid,setGrid] = useState([])
     const [pagination,setPagination] = useState({page_no:1,page_size:10,data_total:0})
@@ -304,7 +304,7 @@ const Journal = () => {
      */
     const openEditModal = (value) => {
         // 触发子组件的调用
-        // _this.journalRenewRef.handleDisplay(value);
+        renewRef.current.handleDisplay(value);
     };
 
 
@@ -470,6 +470,7 @@ const Journal = () => {
                     </Col>
                     <JournalDetail ref={detailRef}/>
                     <JournalDeclare ref={declareRef} refreshPage={getData}/>
+                    <JournalRenew ref={renewRef} refreshPage={getData}/>
                 </div>
             </div>
         </div>
