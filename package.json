@@ -33,6 +33,7 @@
     "typescript": "^4.6.4",
     "vite": "^4.0.0",
     "for-editor": "^0.3.5",
+    "react-cropper": "^2.1.8",
     "vite-plugin-imp": "^2.3.0"
   }
 }
