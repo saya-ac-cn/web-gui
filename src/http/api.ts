@@ -9,7 +9,14 @@ export const loginApi = params => RequestHttp.post(`${backendAPI}/login`, params
 // 令牌刷新
 export const refreshTokenApi = `${backendAPI}/system/token/refresh`;
 
-
+// 上传头像
+export const uploadLogoApi = params => RequestHttp.post(`${backendAPI}/system/user/logo`, params);
+// 获取个人信息
+export const getPersonal = params => RequestHttp.get(`${backendAPI}/system/user`, params);
+// 修改密码
+export const editPwdApi = params => RequestHttp.put(`${backendAPI}/system/user/password`, params);
+// 修改用户信息
+export const editUserInfoApi = params => RequestHttp.put(`${backendAPI}/system/user`, params);
 
 // 获取自己所在组织下的用户
 export const ownOrganizeUserApi = () => RequestHttp.get(`${backendAPI}/system/user/own/organize`, {});

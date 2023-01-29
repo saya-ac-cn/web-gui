@@ -21,7 +21,7 @@ const routes : Array<Router> = [
         name: '我',
         path: '/me',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/me/info')),
         display: true,
         icon: HomeOutlined
     },
@@ -34,10 +34,10 @@ const routes : Array<Router> = [
         icon: MoneyCollectOutlined
     },
     {
-        name: '收支详情',
+        name: '收支预览',
         path: '/statistics',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/financial/day')),
         display: true,
         icon: ProfileOutlined
     },
@@ -101,7 +101,7 @@ const routes : Array<Router> = [
         name: '操作日志',
         path: '/log',
         exact: true,
-        element: lazy(() => import('../pages/log')),
+        element: lazy(() => import('../pages/me/log')),
         display: true,
         icon: HistoryOutlined
     }
