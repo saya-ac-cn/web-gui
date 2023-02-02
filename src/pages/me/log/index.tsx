@@ -96,9 +96,9 @@ const Log = () => {
         // 在发请求前, 显示loading
         setLoading(true)
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await logPageApi(para);
+        const {msg, code, data} = await logPageApi(para).catch(()=>setLoading(false));
         // 在请求完成后, 隐藏loading
-        setLoading(false)
+        setLoading(false);
         if (code === 0) {
             setGrid(data.records);
             setPagination({..._pagination,data_total: data.total_row})

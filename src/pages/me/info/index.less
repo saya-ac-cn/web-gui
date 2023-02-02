@@ -1,0 +1,128 @@
+.about-me{
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  // 通用的编辑状态样式
+  .edit-status{
+    color: rgba(0,0,0,.28);
+    margin-left: 1em;
+  }
+  // 通用的区域板块名称样式
+  .about-me-section{
+    font-size: 1.1em;
+    color: rgba(0,0,0,.6);
+    font-weight: bold;
+  }
+  // 通用的字段名样式
+  .about-me-lable{
+    font-size: 1.1em;
+    color: rgba(0,0,0,.6);
+  }
+  // 通用的字段值样式
+  .about-me-value{
+    color: rgba(0,0,0,.85);
+  }
+  // 通用的保存按钮样式
+  .about-me-save-btn{
+    margin-left: 2em;
+  }
+  // 通用的退出编辑按钮样式
+  .about-me-cancel-btn{
+    margin-left: 1em;
+  }
+
+
+  .about-me-advance{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    flex: 1;
+    width: 100%;
+    // 字段名
+    label{
+      width: 6em;
+    }
+    .about-me-advance-field-area{
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+      .about-me-advance-value{
+        display: block;
+        width: 10em;
+      }
+    }
+    .about-me-advance-line{
+      height: 3em;
+      display: flex;
+      flex-direction: row;
+      justify-content: flex-start;
+      align-items: center;
+    }
+    .about-me-basic{
+      width: 30%;
+      padding: 1em;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      .about-me-logo{
+        margin-top: 2.5em;
+        margin-bottom: 2.5em;
+      }
+    }
+    .about-me-more{
+      flex: 1;
+      padding: 1em;
+      box-shadow: 0 0 6px 0 rgb(0 0 0 / 10%);
+
+      // 个性签名区域
+      .about-me-autograph{
+        height: 4em;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        margin-bottom: 2em;
+        // 字段名
+        label{
+          width: 6em;
+        }
+        .about-me-autograph-area{
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: center;
+          .about-me-autograph-value{
+            display: block;
+            width: 50em;
+          }
+        }
+
+      }
+
+      .about-me-security-section{
+        margin-top: 2em;
+      }
+      .about-me-password-line{
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        align-items: center;
+        .about-me-advance-password{
+          height: 3em;
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-start;
+          align-items: center;
+        }
+        .about-me-password-form{
+          width: 25em;
+          margin-top: 1.5em;
+          margin-bottom: 1.5em;
+        }
+      }
+
+    }
+  }
+}
