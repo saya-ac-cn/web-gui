@@ -1,4 +1,3 @@
-import { invoke } from "@tauri-apps/api/tauri";
 import Router from './router'
 import {BrowserRouter} from 'react-router-dom'
 import 'antd/dist/antd.less'

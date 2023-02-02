@@ -30,8 +30,8 @@ const Layout = () => {
     const page = routes.map((item, i) => {
         return (
             <Route key={i} path={item.path} element={
-                <Suspense fallback={<div>路由懒加载...</div>}>
-                    < item.element />
+                <Suspense fallback={<div>页面加载中...</div>}>
+                    <item.element/>
                 </Suspense>
             } />
         )
