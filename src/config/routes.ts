@@ -13,7 +13,7 @@ const routes : Array<Router> = [
         name: '概览',
         path: '/home',
         exact: true,
-        element: lazy(() => import('../pages/home')),
+        element: lazy(() => import('../pages/me/chart')),
         display: true,
         icon: HomeOutlined,
     },

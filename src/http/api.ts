@@ -143,6 +143,20 @@ export const totalJournalForDayApi = params => RequestHttp.get(`${backendAPI}/fi
 // 导出按天统计的报表
 export const journalForDayExcelApi = `${backendAPI}/financial/journal/collect/excel`;
 
+// 获取数据总量及词云数据
+export const getCountAndWordCloud = () => RequestHttp.get(`${backendAPI}/system/total/object/rows`, {});
+// 近6个月的活跃情况
+export const getActivityRate= params => RequestHttp.get(`${backendAPI}/system/log/total/pre6`, params);
+// 近6个月的动态发布情况
+export const getNewsRate = params => RequestHttp.get(`${backendAPI}/content/news/total/pre6`, params);
+// 统计收支增长率
+export const getAccountGrowthRate = params => RequestHttp.get(`${backendAPI}/financial/journal/total/balance`, params);
+// 计算收入比重
+export const getIncomePercentage = params => RequestHttp.get(`${backendAPI}/financial/journal/total/income`, params);
+// 统计摘要排名
+export const getOrderByAmount = params => RequestHttp.get(`${backendAPI}/financial/journal/total/order`, params);
+// 近6个月的财务流水
+export const getPreSixMonthBill = params => RequestHttp.get(`${backendAPI}/financial/journal/total/pre6`, params);
 
 // 获取计划
 export const planApi = params => RequestHttp.get('/frontend/plan/1',params);
