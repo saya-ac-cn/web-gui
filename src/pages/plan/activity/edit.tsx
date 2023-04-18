@@ -1,10 +1,9 @@
 import React, {forwardRef, useImperativeHandle, useState} from 'react';
 import {DatePicker, Form, Input,Select,InputNumber, Modal,Radio} from "antd";
 import {clearTrimValueEvent} from "@/utils/string";
-import {createPlanApi, updatePlanApi} from "@/http/api";
+import {createPlanApi, updatePlanApi, getToken} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
-import moment from "moment";
-
+import dayjs from 'dayjs';
 const formItemLayout = {
     labelCol: {span: 4},
     wrapperCol: {span: 14},
@@ -15,6 +14,14 @@ const EditActivityPlan = (props,ref) => {
     const [plan, setPlan] = useState({id:null,display:null,title:null,standard_time:null,cycle:null,unit:null,content:null});
     const [open, setOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
+    const [token,setToken] = useState('');
+
+    /**
+     * 初始化token
+     */
+    const initToken = async () => {
+        setToken(await getToken())
+    }
 
     // 暴露方法给父组件
     useImperativeHandle(ref,()=>({
@@ -35,13 +42,14 @@ const EditActivityPlan = (props,ref) => {
     const handleDisplay = (val) => {
         if(val){
             setPlan(val)
-            const standard_time = !val.standard_time ? null : moment(val.standard_time, 'YYYY-MM-DD HH:mm:ss')
+            const standard_time = !val.standard_time ? null : dayjs(val.standard_time, 'YYYY-MM-DD HH:mm:ss')
             planForm.setFieldsValue({display:val.display, title:val.title,standard_time:standard_time, cycle:val.cycle,unit:!val.unit?0:val.unit,content:val.content});
         }else{
+            setPlan({id:null,display:null,title:null,standard_time:null,cycle:null,unit:null,content:null})
             planForm.setFieldsValue({display:null,title:null,standard_time:null,cycle:null,unit:null,content:null});
         }
+        initToken()
         setOpen(true);
-
     };
 
     /**
@@ -66,13 +74,19 @@ const EditActivityPlan = (props,ref) => {
      * @returns {boolean}
      */
     const handleAddPlan = (values) => {
-        const standard_time = moment(values.standard_time).format('YYYY-MM-DD HH:mm:ss');
-        const param = {display:values.display,title:values.title,standard_time:standard_time,cycle:values.cycle, unit:values.unit, content:values.content}
+        const standard_time = dayjs(values.standard_time).format('YYYY-MM-DD HH:mm:ss');
+        const param = {display:values.display,title:values.title,standard_time:standard_time,cycle:values.cycle, unit:values.unit, content:values.content,token:token}
         Modal.confirm({
             title: '您确定创建该计划提醒?',
             onOk: async () => {
                 setConfirmLoading(true);
-                const {msg, code} = await createPlanApi(param).catch(()=>setConfirmLoading(false));
+                const {err, result} = await createPlanApi(param);
+                if (err){
+                    console.error('创建该计划提醒异常:',err)
+                    setConfirmLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 setConfirmLoading(false);
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "添加成功");
@@ -80,6 +94,8 @@ const EditActivityPlan = (props,ref) => {
                     props.refreshPage();
                     handleCancel();
                 } else {
+                    // 为下一次的提交申请一个token
+                    setToken(await getToken());
                     openNotificationWithIcon("error", "错误提示", msg);
                 }
             },
@@ -95,13 +111,19 @@ const EditActivityPlan = (props,ref) => {
      * @returns {boolean}
      */
     const handleRenewPlan = (values) => {
-        const standard_time = moment(values.standard_time).format('YYYY-MM-DD HH:mm:ss');
-        const param = {display:values.display,title:values.title,id:values.id,standard_time:standard_time,cycle:values.cycle, unit:values.unit, content:values.content}
+        const standard_time = dayjs(values.standard_time).format('YYYY-MM-DD HH:mm:ss');
+        const param = {display:values.display,title:values.title,id:values.id,standard_time:standard_time,cycle:values.cycle, unit:values.unit, content:values.content,token:token}
         Modal.confirm({
             title: '您确定要保存此次修改结果?',
             onOk: async () => {
                 setConfirmLoading(true);
-                const {msg, code} = await updatePlanApi(param).catch(()=>setConfirmLoading(false));
+                const {err, result} = await updatePlanApi(param);
+                if (err){
+                    console.error('修改计划提醒异常:',err)
+                    setConfirmLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 setConfirmLoading(false);
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "修改成功");
@@ -109,6 +131,8 @@ const EditActivityPlan = (props,ref) => {
                     props.refreshPage();
                     handleCancel();
                 } else {
+                    // 为下一次的提交申请一个token
+                    setToken(await getToken());
                     openNotificationWithIcon("error", "错误提示", msg);
                 }
             },
@@ -133,12 +157,12 @@ const EditActivityPlan = (props,ref) => {
     return (
         <Modal title={plan ? '编辑计划提醒' : '添加计划提醒'} open={open} confirmLoading={confirmLoading} maskClosable={false} width="45%" okText='保存' onOk={handleSubmit} onCancel={handleCancel}>
             <Form {...formItemLayout} form={planForm}>
-                <Form.Item label="标题：" {...formItemLayout} initialValue={plan.title} getValueFromEvent={ (e) => clearTrimValueEvent(e)} name='title' rules={[{required: true, message: '请输入标题'}, {max: 32, message: '长度在 1 到 32 个字符'}]}>
+                <Form.Item label="标题：" {...formItemLayout} initialValue={plan.title} getValueFromEvent={ (e) => clearTrimValueEvent(e.target.value)} name='title' rules={[{required: true, message: '请输入标题'}, {max: 32, message: '长度在 1 到 32 个字符'}]}>
                     <Input showCount placeholder='请输入标题' maxLength={32}/>
                 </Form.Item>
 
-                <Form.Item label="执行时间：" {...formItemLayout} initialValue={!plan || !plan.standard_time ? null : moment(plan.standard_time, 'YYYY-MM-DD HH:mm:ss')} name='standard_time' rules={[{required: true, message: '请选择执行时间'}]}>
-                    <DatePicker format="YYYY-MM-DD HH:mm:ss" showTime={{ defaultValue: moment('00:00:00', 'HH:mm:ss')}} aceholder="执行时间"/>
+                <Form.Item label="执行时间：" {...formItemLayout} initialValue={!plan || !plan.standard_time ? null : dayjs(plan.standard_time, 'YYYY-MM-DD HH:mm:ss')} name='standard_time' rules={[{required: true, message: '请选择执行时间'}]}>
+                    <DatePicker format="YYYY-MM-DD HH:mm:ss" showTime={{ defaultValue: dayjs('00:00:00', 'HH:mm:ss')}} aceholder="执行时间"/>
                 </Form.Item>
 
                 <Form.Item label="重复周期：" {...formItemLayout} initialValue={plan.cycle} name='cycle' rules={[{required: true, message: '请选择重复周期'}]}>
@@ -162,7 +186,7 @@ const EditActivityPlan = (props,ref) => {
                     </Radio.Group>
                 </Form.Item>
 
-                <Form.Item label="内容：" {...formItemLayout} initialValue={plan.content} getValueFromEvent={ (e) => clearTrimValueEvent(e)} name='content' rules={[{required: true, message: '请输入计划提醒内容'}, {max: 128, message: '长度在 1 到 128 个字符'}]}>
+                <Form.Item label="内容：" {...formItemLayout} initialValue={plan.content} getValueFromEvent={ (e) => clearTrimValueEvent(e.target.value)} name='content' rules={[{required: true, message: '请输入计划提醒内容'}, {max: 128, message: '长度在 1 到 128 个字符'}]}>
                     <Input.TextArea showCount placeholder='请输入计划提醒内容' maxLength={128} autosize={{minRows: 4, maxRows: 6}}/>
                 </Form.Item>
             </Form>

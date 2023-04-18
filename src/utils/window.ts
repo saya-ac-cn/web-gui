@@ -1,4 +1,8 @@
 import {notification} from 'antd';
+import React from 'react';
+
+
+
 
 // Notification通知提醒框
 export const openNotificationWithIcon = (type, message, description) => notification[type]({

@@ -1,5 +1,5 @@
 import {Button, Col, DatePicker, Form, Input, Modal, Table} from "antd";
-import moment from "moment";
+import dayjs from 'dayjs';
 import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined} from "@ant-design/icons";
 import {disabledDate, extractUserName} from "@/utils/var"
 import React, {useEffect, useRef, useState} from "react";
@@ -51,7 +51,7 @@ const Memo = () => {
                 <div>
                     <Button type="primary" size="small" onClick={() => handleModalEdit(record)} shape="circle" icon={<EditOutlined/>}/>
                     &nbsp;
-                    <Button type="danger" size="small" onClick={() => handleDellMemo(record)} shape="circle" icon={<DeleteOutlined/>}/>
+                    <Button type="primary" danger="true" size="small" onClick={() => handleDellMemo(record)} shape="circle" icon={<DeleteOutlined/>}/>
                 </div>
             ),
         }
@@ -72,7 +72,14 @@ const Memo = () => {
         // 在发请求前, 显示loading
         setLoading(true);
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await memoPageApi(para).catch(()=>{setLoading(false)});
+        const {err,result} = await memoPageApi(para);
+        if (err){
+            console.error('获取便利贴列表数据异常:',err)
+            setLoading(false)
+            return
+        }
+        const {msg, code,data} = result
+
         // 在请求完成后, 隐藏loading
         setLoading(false)
         if (code === 0) {
@@ -163,7 +170,13 @@ const Memo = () => {
      */
     const handleModalEdit = async (value) => {
         setLoading(true)
-        const {msg, code, data} = await memoInfoApi(value.id).catch(()=>setLoading(false));
+        const {err,result} = await memoInfoApi(value.id);
+        if (err){
+            console.error('获取便利贴异常:',err)
+            setLoading(false)
+            return
+        }
+        const {msg, code,data} = result
         setLoading(false)
         if (code === 0) {
             editRef.current.handleDisplay(data);
@@ -186,7 +199,13 @@ const Memo = () => {
             onOk: async () => {
                 // 在发请求前, 显示loading
                 setLoading(true)
-                const {msg, code} = await deleteMemoApi(item.id).catch(()=>setLoading(false));
+                const {err, result} = await deleteMemoApi(item.id);
+                if (err){
+                    console.error('删除便利贴异常:',err)
+                    setLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false);
                 if (code === 0) {
@@ -213,7 +232,7 @@ const Memo = () => {
                                        placeholder='按标题检索'/>
                             </Form.Item>
                             <Form.Item label="填写时间:">
-                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
+                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[dayjs(filters.begin_time),dayjs(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
                                 <Button type="primary" htmlType="button" onClick={getData}>

@@ -1,14 +1,14 @@
-import React, {useState} from "react";
+import React, {useState,useEffect} from "react";
 import './index.less'
 import Storage from "@/utils/storage";
 import {openNotificationWithIcon} from "@/utils/window";
-import {editUserInfoApi,editPwdApi} from "@/http/api";
+import {editUserInfoApi,editPwdApi,getToken} from "@/http/api";
 import {Button, Input,DatePicker,Form} from "antd";
 import {FormOutlined, CheckOutlined,CloseOutlined} from "@ant-design/icons";
 import './index.less'
 import Cropper from '@/component/cropper'
 import {clearTrimValueEvent} from "@/utils/string";
-import moment from "moment";
+import dayjs from 'dayjs';
 import {disabledDate, returnDefaultValue} from '@/utils/var'
 
 const formItemLayout = {
@@ -33,8 +33,18 @@ const Info = () => {
         hometown:false,
         password:false,
     });
+    const [token,setToken] = useState('');
     const [currentUser,setCurrentUser] = useState(Storage.get(Storage.USER_KEY))
     const [form, setForm] = useState({});
+
+    useEffect(()=>{
+        init()
+    },[])
+
+    const init = async () => {
+        setToken(await getToken())
+    }
+
 
     /**
      * 切换 文本框编辑状态
@@ -65,21 +75,27 @@ const Info = () => {
             return;
         }
         // 构造提交参数
-        let args = {account: currentUser.account}
+        let args = {account: currentUser.account,token:token}
         args[field] = value
         // 修改loading
         let _loading = {...loading}
         _loading[field] = true
         setLoading(_loading)
-        const result = await editUserInfoApi(args).catch(()=>{
+        const {err,result} = await editUserInfoApi(args);
+        if(err){
+            console.error('修改用户信息异常:',err)
             _loading = {...loading}
             _loading[field] = false
             setLoading(_loading)
-        });
+            setToken(null)
+            return
+        }
         _loading = {...loading}
         _loading[field] = false
         setLoading(_loading)
         let {msg, code} = result;
+        // 为下一次的提交申请一个token
+        setToken(await getToken());
         if (code === 0) {
             // 修改成功后，及时回填值
             const _status = {...status}
@@ -92,6 +108,7 @@ const Info = () => {
             Storage.add(Storage.USER_KEY,user)
             openNotificationWithIcon("success", "操作结果", "个人信息修改成功");
         } else {
+            console.error('修改用户信息异常:')
             openNotificationWithIcon("error", "错误提示", msg);
         }
     }
@@ -126,12 +143,20 @@ const Info = () => {
             // 通过验证
             let args = {
                 password: value.password,
-                account:currentUser.account
+                account:currentUser.account,
+                token:token
             };
             setLoading({...loading,password: true});
-            const result = await editPwdApi(args).catch(()=>{setLoading({...loading,password: true})});
+            const {err,result}  = await editPwdApi(args);
+            if (err){
+                console.error('密码修改异常:',err)
+                setLoading({...loading,password: true})
+                return
+            }
             setLoading({...loading,password: false})
             let {msg, code} = result;
+            // 为下一次的提交申请一个token
+            setToken(await getToken());
             if (code === 0) {
                 handleEditInput('password',false)
                 openNotificationWithIcon("success", "操作结果", "密码修改成功");
@@ -173,7 +198,7 @@ const Info = () => {
                                     <div>
                                         {
                                             status.birthday
-                                                ? <div className='about-me-advance-field-area'><DatePicker className='about-me-advance-value' onChange={dateChange} disabledDate={disabledDate} value={(form && form.birthday)?moment(form.birthday):null}/><Button type="primary" loading={loading.birthday} onClick={() => handleEditInputSubmit('birthday')} className='about-me-save-btn' htmlType="button">保存</Button> <Button className='about-me-cancel-btn' type="primary" onClick={() => handleEditInput('birthday',false)} htmlType="button">取消</Button></div>
+                                                ? <div className='about-me-advance-field-area'><DatePicker className='about-me-advance-value' onChange={dateChange} disabledDate={disabledDate} value={(form && form.birthday)?dayjs(form.birthday):null}/><Button type="primary" loading={loading.birthday} onClick={() => handleEditInputSubmit('birthday')} className='about-me-save-btn' htmlType="button">保存</Button> <Button className='about-me-cancel-btn' type="primary" onClick={() => handleEditInput('birthday',false)} htmlType="button">取消</Button></div>
                                                 :<div className='about-me-advance-field-area'><span className='about-me-value'>{returnDefaultValue(currentUser.birthday)}</span><FormOutlined onClick={() => handleEditInput('birthday',true)} className='edit-status'/></div>
                                         }
                                     </div>

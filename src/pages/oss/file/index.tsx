@@ -1,16 +1,17 @@
-import React, {Component, useEffect, useState} from 'react';
+import React, {Component, useEffect, useState,useRef} from 'react';
 import {Button, Col, DatePicker, Table, Form, Input, Modal, Upload} from "antd";
-import {filePageApi, editFileApi, uploadFileApi, downloadFileApi, deleteFileApi} from "@/http/api"
+import {filePageApi, editFileApi, uploadFileApi, downloadFileApi, deleteFileApi, getToken} from "@/http/api"
 import {openNotificationWithIcon} from "@/utils/window";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import axios from "axios";
 import {InboxOutlined,DeleteOutlined, CloudDownloadOutlined, EditOutlined, ReloadOutlined, SearchOutlined,CloudUploadOutlined} from "@ant-design/icons";
 import {disabledDate, extractUserName} from "@/utils/var";
 import Storage from "@/utils/storage";
-import {BaseDirectory, writeBinaryFile} from "@tauri-apps/api/fs";
-
 const {RangePicker} = DatePicker;
 const { Dragger } = Upload;
+import FileView from './view';
+
+
 const File = () => {
 
     const [grid,setGrid] = useState([])
@@ -18,9 +19,21 @@ const File = () => {
     const [filters,setFilters] = useState({file_name:null,begin_time: null,end_time: null})
     const [modal,setModal] = useState(false)
     const [loading,setLoading] = useState(false)
+    const [token,setToken] = useState('');
     const organize = Storage.get(Storage.ORGANIZE_KEY)
 
+    const viewRef = useRef();
+
+    /**
+     * 初始化token
+     */
+    const initToken = async () => {
+        setToken(await getToken())
+    }
+
+
     useEffect(()=>{
+        initToken()
         getData()
     },[])
 
@@ -42,7 +55,7 @@ const File = () => {
             // 如果response.code不为0，则表示这个文件在服务器端已经上传失败了，此时调用删除方法只需要删除浏览器上的即可
             if (response && 0 === response.code){
                 // 删除文件
-                deleteFile({'uid':uid})
+                // deleteFile({'uid':uid})
             }
         },
         onChange(info) {
@@ -64,6 +77,9 @@ const File = () => {
         {
             title: '文件名',
             dataIndex: 'file_name', // 显示数据对应的属性名
+            render: (text, record) => {
+                return <Button type="link" onClick={e => handleViewModalOpen(record)}>{record.file_name}</Button>
+            }
         },
         {
             title: '上传者',
@@ -99,7 +115,7 @@ const File = () => {
                     &nbsp;
                     <Button type="primary" size="small" onClick={() => handleChangeFile(record)} shape="circle" icon={<EditOutlined/>}/>
                     &nbsp;
-                    <Button type="danger" size="small" onClick={() => handleDeleteFile(record)} shape="circle" icon={<DeleteOutlined/>}/>
+                    <Button type="primary" danger="true" size="small" onClick={() => handleDeleteFile(record)} shape="circle" icon={<DeleteOutlined/>}/>
                 </div>
             ),
         },
@@ -120,7 +136,13 @@ const File = () => {
         // 在发请求前, 显示loading
         setLoading(true);
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await filePageApi(para);
+        const {err, result} = await filePageApi(para);
+        if (err){
+            console.error('获取文件列表数据异常:',err)
+            setLoading(false);
+            return
+        }
+        const {msg, code,data} = result
         // 在请求完成后, 隐藏loading
         setLoading(false);
         if (code === 0) {
@@ -204,9 +226,17 @@ const File = () => {
         // 在发请求前, 显示loading
         setLoading(true);
         // 发异步ajax请求, 获取数据
-        const {msg, code} = await deleteFileApi(para);
+        const {err, result} = await deleteFileApi(para);
+        if (err){
+            console.error('删除文件异常:',err)
+            setLoading(false);
+            return
+        }
+        const {msg, code} = result
         // 在请求完成后, 隐藏loading
         setLoading(false);
+        // 为下一次的提交申请一个token
+        setToken(await getToken());
         if (code === 0) {
             openNotificationWithIcon("success", "操作结果", "删除成功");
             getData();
@@ -223,7 +253,7 @@ const File = () => {
             title: '删除确认',
             content: `确认文件名为:'${item.file_name}'的文件吗?`,
             onOk: () => {
-                let para = { id: item.id };
+                let para = {id: item.id, token: token};
                 deleteFile(para)
             }
         })
@@ -249,10 +279,19 @@ const File = () => {
         }).then(function (res) {
             setLoading(false);
             let blob = new Blob([res.data]);
-            blob.arrayBuffer().then(async buffer => {
-                await writeBinaryFile({path: row.file_name, contents: buffer}, {dir: BaseDirectory.Desktop});
-                openNotificationWithIcon("success","导出提示", `${row.file_name}已经导出到桌面，请及时查阅`)
-            })
+            // blob.arrayBuffer().then(async buffer => {
+            //     await writeBinaryFile({path: row.file_name, contents: buffer}, {dir: BaseDirectory.Desktop});
+            //     openNotificationWithIcon("success","导出提示", `${row.file_name}已经导出到桌面，请及时查阅`)
+            // })
+            if (window.navigator.msSaveOrOpenBlob) {
+                navigator.msSaveBlob(blob, row.file_name);
+            } else {
+                let link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = row.file_name;
+                link.click();
+                window.URL.revokeObjectURL(link.href);
+            }
         }).catch(res => {
             setLoading(false);
             openNotificationWithIcon("error", "错误提示", "下载文件失败"+res);
@@ -279,13 +318,21 @@ const File = () => {
             title: '修改确认',
             content: message,
             onOk: async () => {
-                let para = { id: item.id, status: sendStatus };
+                let para = { id: item.id, status: sendStatus,token: token};
                 // 在发请求前, 显示loading
                 setLoading(true);
                 // 发异步ajax请求, 获取数据
-                const {msg, code} = await editFileApi(para);
+                const {err, result} = await editFileApi(para);
+                if (err){
+                    console.error('修改文件状态异常:',err)
+                    setLoading(false);
+                    return
+                }
+                const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false);
+                // 为下一次的提交申请一个token
+                setToken(await getToken());
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "修改成功");
                     getData();
@@ -294,6 +341,13 @@ const File = () => {
                 }
             }
         })
+    };
+
+    /**
+     * 预览文件
+     */
+    const handleViewModalOpen = (row) => {
+        viewRef.current.handleDisplay({file_name:row.file_name,file_url:row.file_url});
     };
 
 
@@ -311,7 +365,7 @@ const File = () => {
                                        placeholder='请输入文件名'/>
                             </Form.Item>
                             <Form.Item label="上传时间:">
-                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
+                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[dayjs(filters.begin_time),dayjs(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
                                 <Button type="primary" htmlType="button" onClick={getData}>
@@ -343,7 +397,7 @@ const File = () => {
                     <Modal
                         title="上传文件"
                         open={modal}
-                        onOk={()=>setModal(false)}
+                        footer={null}
                         onCancel={()=>setModal(false)}>
                         <Dragger {...uploadConfig}>
                             <p className="ant-upload-drag-icon">
@@ -357,6 +411,7 @@ const File = () => {
                     </Modal>
                 </div>
             </div>
+            <FileView ref={viewRef}/>
         </div>
     )
 }

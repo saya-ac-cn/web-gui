@@ -1,7 +1,7 @@
 import React, { useState,forwardRef,useImperativeHandle } from 'react';
 import { Modal, Form, Input } from 'antd';
 import {clearTrimValueEvent} from "@/utils/string";
-import {createMemoApi, updateMemoApi} from "@/http/api"
+import {createMemoApi, updateMemoApi,getToken} from "@/http/api"
 import {openNotificationWithIcon} from "@/utils/window";
 
 const formItemLayout = {
@@ -15,11 +15,19 @@ const EditMemo = (props,ref) => {
     const [memoId, setMemoId] = useState(null);
     const [open, setOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
+    const [token,setToken] = useState('');
 
     // 暴露方法给父组件
     useImperativeHandle(ref,()=>({
         handleDisplay,
     }))
+
+    /**
+     * 初始化token
+     */
+    const initToken = async () => {
+        setToken(await getToken())
+    }
 
     /**
      * 显示弹框
@@ -30,8 +38,10 @@ const EditMemo = (props,ref) => {
             setMemoId(val.id)
             memoForm.setFieldsValue({title:val.title, content:val.content});
         }else{
+            setMemoId(null)
             memoForm.setFieldsValue({title:null, content:null});
         }
+        initToken();
         setOpen(true);
     };
 
@@ -44,6 +54,7 @@ const EditMemo = (props,ref) => {
      */
     const handleSubmit = () => {
         memoForm.validateFields().then((values) => {
+            values.token = token
             if(memoId){
                 // 执行修改
                 values.id = memoId;
@@ -67,7 +78,13 @@ const EditMemo = (props,ref) => {
             title: '您确定创建该便利贴?',
             onOk: async () => {
                 setConfirmLoading(true);
-                const {msg, code} = await createMemoApi(value).catch(()=>setConfirmLoading(false));
+                const {err, result} = await createMemoApi(value);
+                if (err){
+                    console.error('保存便利贴异常:',err)
+                    setConfirmLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 setConfirmLoading(false);
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "添加成功");
@@ -75,6 +92,8 @@ const EditMemo = (props,ref) => {
                     props.refreshPage();
                     handleCancel();
                 } else {
+                    // 为下一次的提交申请一个token
+                    setToken(await getToken());
                     openNotificationWithIcon("error", "错误提示", msg);
                 }
             },
@@ -94,7 +113,13 @@ const EditMemo = (props,ref) => {
             title: '您确定要保存此次修改结果?',
             onOk: async () => {
                 setConfirmLoading(true);
-                const {msg, code} = await updateMemoApi(value).catch(()=>setConfirmLoading(false));
+                const {err, result} = await updateMemoApi(value);
+                if (err){
+                    console.error('修改便利贴异常:',err)
+                    setConfirmLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 setConfirmLoading(false);
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "修改成功");
@@ -102,6 +127,8 @@ const EditMemo = (props,ref) => {
                     props.refreshPage();
                     handleCancel();
                 } else {
+                    // 为下一次的提交申请一个token
+                    setToken(await getToken());
                     openNotificationWithIcon("error", "错误提示", msg);
                 }
             },

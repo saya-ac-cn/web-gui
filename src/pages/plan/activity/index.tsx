@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button, Col, Input, Form, Table, DatePicker, Modal} from "antd";
-import {activityPlanPageApi, advanceFinishPlanApi, deletePlanApi} from "@/http/api";
+import {activityPlanPageApi, advanceFinishPlanApi, deletePlanApi, getToken} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
 import {getPlanHowOftenExecute} from "@/utils/enum";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import EditActivityPlan from "./edit";
 import {
     DeleteOutlined,
@@ -25,9 +25,20 @@ const ActivityPlan = () => {
     const [pagination, setPagination] = useState({page_no: 1, page_size: 10, data_total: 0})
     const [filters, setFilters] = useState({title: null, content: null, begin_time: null, end_time: null})
     const [loading, setLoading] = useState(false)
+    const [token,setToken] = useState('');
+
     const organize = Storage.get(Storage.ORGANIZE_KEY)
 
+    /**
+     * 初始化token
+     */
+    const initToken = async () => {
+        setToken(await getToken())
+    }
+
+
     useEffect(()=>{
+        initToken()
         getData()
     },[])
     
@@ -98,7 +109,7 @@ const ActivityPlan = () => {
                     <Button type="primary" size="small" onClick={() => handleFinishPlan(record)} shape="circle"
                             icon={<CheckOutlined/>}/>
                     &nbsp;
-                    <Button type="danger" size="small" onClick={() => handleDell(record)} shape="circle" icon={<DeleteOutlined/>}/>
+                    <Button type="primary" danger="true" size="small" onClick={() => handleDell(record)} shape="circle" icon={<DeleteOutlined/>}/>
                 </div>
             ),
         },
@@ -132,9 +143,13 @@ const ActivityPlan = () => {
         // 在发请求前, 显示loading
         setLoading(true)
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await activityPlanPageApi(para).catch(() => {
+        const {err,result} = await activityPlanPageApi(para);
+        if (err){
+            console.error('获取当前活跃的计划提醒列表数据异常:',err)
             setLoading(false)
-        });
+            return
+        }
+        const {msg, code, data} = result
         // 在请求完成后, 隐藏loading
         setLoading(false)
         if (code === 0) {
@@ -240,7 +255,13 @@ const ActivityPlan = () => {
             onOk: async () => {
                 // 在发请求前, 显示loading
                 setLoading(true)
-                const {msg, code} = await deletePlanApi(item.id).catch(() => setLoading(false));
+                const {err, result} = await deletePlanApi(item.id);
+                if (err){
+                    console.error('删除计划提醒异常:',err)
+                    setLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false)
                 if (code === 0) {
@@ -266,9 +287,17 @@ const ActivityPlan = () => {
             onOk: async () => {
                 // 在发请求前, 显示loading
                 setLoading(true)
-                const {msg, code} = await advanceFinishPlanApi(item.id).catch(() => setLoading(false));
+                const {err, result} = await advanceFinishPlanApi({id: item.id,token: token});
+                if (err){
+                    console.error('提前完成计划异常:',err)
+                    setLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false)
+                // 为下一次的提交申请一个token
+                setToken(await getToken());
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "操作成功");
                     getData();
@@ -299,7 +328,7 @@ const ActivityPlan = () => {
                                        placeholder='按内容检索'/>
                             </Form.Item>
                             <Form.Item label="执行时间:">
-                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} onChange={onChangeDate}/>
+                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[dayjs(filters.begin_time),dayjs(filters.end_time)]:[null,null]} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
                                 <Button type="primary" htmlType="button" onClick={getData}>

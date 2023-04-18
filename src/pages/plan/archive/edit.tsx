@@ -1,6 +1,6 @@
 import React, {forwardRef, useImperativeHandle, useState} from 'react';
 import {Form, Modal,Radio,Tooltip} from "antd";
-import {updateArchivePlanApi} from "@/http/api";
+import {updateArchivePlanApi,getToken} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
 import {QuestionCircleOutlined} from "@ant-design/icons";
 
@@ -15,6 +15,14 @@ const EditArchivePlan = (props,ref) => {
     const [plan, setPlan] = useState({id:null,title:null,archive_time:null,display:null, status:1,content:null});
     const [open, setOpen] = useState(false);
     const [confirmLoading, setConfirmLoading] = useState(false);
+    const [token,setToken] = useState('');
+
+    /**
+     * 初始化token
+     */
+    const initToken = async () => {
+        setToken(await getToken())
+    }
 
     // 暴露方法给父组件
     useImperativeHandle(ref,()=>({
@@ -37,8 +45,10 @@ const EditArchivePlan = (props,ref) => {
             setPlan(val)
             planForm.setFieldsValue({display:val.display, status:val.status});
         }else{
+            setPlan({id:null,title:null,archive_time:null,display:null, status:1,content:null})
             planForm.setFieldsValue({display:null, status:null});
         }
+        initToken()
         setOpen(true);
 
     };
@@ -60,14 +70,20 @@ const EditArchivePlan = (props,ref) => {
      * @returns {boolean}
      */
     const handleRenewPlan = (value) => {
-        const param = {display:value.display,status:value.status,id:value.id}
+        const param = {display:value.display,status:value.status,id:value.id,token:token}
         Modal.confirm({
             title: '您确定要保存此次修改结果?',
             cancelText: '再想想',
             okText: '想好啦',
             onOk: async () => {
                 setConfirmLoading(true);
-                const {msg, code} = await updateArchivePlanApi(param).catch(()=>setConfirmLoading(false));
+                const {err, result} = await updateArchivePlanApi(param)
+                if (err){
+                    console.error('修改计划提醒异常:',err)
+                    setConfirmLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 setConfirmLoading(false);
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "修改成功");
@@ -75,6 +91,8 @@ const EditArchivePlan = (props,ref) => {
                     props.refreshPage();
                     handleCancel();
                 } else {
+                    // 为下一次的提交申请一个token
+                    setToken(await getToken());
                     openNotificationWithIcon("error", "错误提示", msg);
                 }
             },

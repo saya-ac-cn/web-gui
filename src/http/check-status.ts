@@ -1,5 +1,9 @@
 import {openNotificationWithIcon} from "@/utils/window";
-import {openLoginWindow} from '@/windows/actions'
+import Storage from '@/utils/storage'
+
+
+// 封装错误状态判断方法
+
 /**
  * @description: 校验网络请求状态码
  * @param {Number} status
@@ -12,7 +16,8 @@ export const checkStatus = (status: number): void => {
             break;
         case 401:
             openNotificationWithIcon("error", "错误提示", '登录过期！请您重新登录');
-            openLoginWindow();
+            Storage.removeAll()
+            window.location.href = "/"
             break;
         case 403:
             openNotificationWithIcon("error", "错误提示", '当前账号无权限访问！');
@@ -25,6 +30,9 @@ export const checkStatus = (status: number): void => {
             break;
         case 408:
             openNotificationWithIcon("error", "错误提示", '请求超时！请您稍后重试！');
+            break;
+        case 423:
+            openNotificationWithIcon("error", "错误提示", '当前资源被锁定！请您稍后重试！');
             break;
         case 500:
             openNotificationWithIcon("error", "错误提示", '服务异常！');

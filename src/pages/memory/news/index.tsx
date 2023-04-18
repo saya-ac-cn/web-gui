@@ -2,7 +2,7 @@ import React, {Component, useEffect, useRef, useState} from 'react';
 import {Button, Col, Table, DatePicker, Input, Form, Modal, Tag} from "antd";
 import {deleteNewsApi, newsPageApi} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import {DeleteOutlined, EditOutlined, PlusOutlined, ReloadOutlined, SearchOutlined} from "@ant-design/icons";
 import {disabledDate, extractUserName} from "@/utils/var";
 import Storage from "@/utils/storage";
@@ -62,7 +62,7 @@ const News = () =>  {
                 <div>
                     <Button type="primary" size="small" onClick={() => handleModalOpen(record.id)} shape="circle" icon={<EditOutlined/>}/>
                     &nbsp;
-                    <Button type="danger" size="small" onClick={() => handleDellNews(record)}  shape="circle" icon={<DeleteOutlined/>}/>
+                    <Button type="primary" danger="true" size="small" onClick={() => handleDellNews(record)}  shape="circle" icon={<DeleteOutlined/>}/>
                 </div>
             ),
         },
@@ -97,7 +97,15 @@ const News = () =>  {
         // 在发请求前, 显示loading
         setLoading(true);
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await newsPageApi(para).catch(()=>{setLoading(false)});
+        const {err,result} = await newsPageApi(para);
+        if (err){
+            console.error('获取动态列表数据异常:',err)
+            setLoading(false)
+            return
+        }
+        const {msg, code, data} = result
+
+
         // 在请求完成后, 隐藏loading
         setLoading(false)
         if (code === 0) {
@@ -119,7 +127,13 @@ const News = () =>  {
             onOk: async () => {
                 // 在发请求前, 显示loading
                 setLoading(true);
-                const {msg, code} = await deleteNewsApi(item.id).catch(()=>{setLoading(false)});
+                const {err, result} = await deleteNewsApi(item.id);
+                if (err){
+                    console.error('删除动态异常:',err)
+                    setLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false)
                 if (code === 0) {
@@ -220,7 +234,7 @@ const News = () =>  {
                                        placeholder='按主题检索'/>
                             </Form.Item>
                             <Form.Item label="发布时间:">
-                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
+                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[dayjs(filters.begin_time),dayjs(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
                                 <Button type="primary" htmlType="button" onClick={getData}>

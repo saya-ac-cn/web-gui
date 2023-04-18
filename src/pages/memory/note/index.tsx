@@ -2,7 +2,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {Button, Col, Row, DatePicker, Menu, Table, Form, Modal, Tag, Select, Tooltip, Input} from "antd";
 import {notePageApi, deleteNoteApi, noteBookListApi, deleteNoteBookApi} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import {
     DeleteOutlined,
     EditOutlined,
@@ -15,7 +15,7 @@ import {
     EyeOutlined,
     EyeInvisibleOutlined
 } from "@ant-design/icons";
-import {disabledDate, extractUserName} from "@/utils/var"
+import {extractUserName} from "@/utils/var"
 import Storage from "@/utils/storage";
 import EditNoteBook from './book';
 import EditNote from './note'
@@ -83,7 +83,7 @@ const Note = () => {
                             onClick={() => handleNoteModalOpen(record.id)}
                             shape="circle" icon={<EditOutlined/>}/>
                     &nbsp;
-                    <Button type="danger" size="small" shape="circle" onClick={() => handleDeleteNote(record)}
+                    <Button type="primary" danger="true" size="small" shape="circle" onClick={() => handleDeleteNote(record)}
                             icon={<DeleteOutlined/>}/>
                 </div>
             ),
@@ -120,7 +120,13 @@ const Note = () => {
         // 在发请求前, 显示loading
         setLoading(true);
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await notePageApi(para).catch(()=>{setLoading(false)});
+        const {err, result} = await notePageApi(para);
+        if (err){
+            console.error('获取笔记列表数据异常:',err)
+            setLoading(false)
+            return
+        }
+        const {msg, code, data} = result
         // 在请求完成后, 隐藏loading
         setLoading(false)
         if (code === 0) {
@@ -136,7 +142,12 @@ const Note = () => {
      */
     const getGroup = async () => {
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await noteBookListApi()
+        const {err, result} = await noteBookListApi()
+        if (err){
+            console.error('获取得到笔记簿下拉选择列表数据异常:',err)
+            return
+        }
+        const {msg, code,data} = result
         // 在请求完成后, 隐藏loading
         // 所有的笔记簿一级选项
         let notebooks = [];
@@ -283,7 +294,13 @@ const Note = () => {
             onOk: async () => {
                 // 在发请求前, 显示loading
                 setLoading(true);
-                const {msg, code} = await deleteNoteBookApi(item.id).catch(()=>{setLoading(false)});
+                const {err, result} = await deleteNoteBookApi(item.id);
+                if (err){
+                    console.error('删除笔记簿异常:',err)
+                    setLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false)
                 if (code === 0) {
@@ -324,7 +341,13 @@ const Note = () => {
             onOk: async () => {
                 // 在发请求前, 显示loading
                 setLoading(true);
-                const {msg, code} = await deleteNoteApi(item.id).catch(()=>{setLoading(false)});
+                const {err, result} = await deleteNoteApi(item.id);
+                if (err){
+                    console.error('删除笔记异常:',err)
+                    setLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false)
                 if (code === 0) {
@@ -370,7 +393,7 @@ const Note = () => {
                                                    placeholder='按主题检索'/>
                                         </Form.Item>
                                         <Form.Item label="添加时间:">
-                                            <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
+                                            <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[dayjs(filters.begin_time),dayjs(filters.end_time)]:[null,null]} onChange={onChangeDate}/>
                                         </Form.Item>
                                         <Form.Item>
                                             <Button type="primary" htmlType="button" onClick={getData}>
@@ -409,4 +432,4 @@ const Note = () => {
 }
 
 // 对外暴露
-export default Note;
+export default React.memo(Note);

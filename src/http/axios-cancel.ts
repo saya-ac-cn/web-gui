@@ -1,9 +1,9 @@
 import axios, { AxiosRequestConfig, Canceler } from "axios";
 import qs from "qs";
+import {isFunction} from "@/utils/is"
 
-const  isFunction = (val: unknown) =>{
-    return toString.call(val) === `[object Function]`;
-}
+// 封装取消请求方法
+
 
 // * 声明一个 Map 用于存储每个请求的标识 和 取消函数
 let pendingMap = new Map<string, Canceler>();

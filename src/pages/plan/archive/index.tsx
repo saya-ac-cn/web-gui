@@ -5,7 +5,7 @@ import {
     deleteArchivePlanApi,
 } from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
-import moment from 'moment';
+import dayjs from 'dayjs';
 import {DeleteOutlined, EditOutlined, ReloadOutlined, SearchOutlined} from "@ant-design/icons";
 import {extractUserName} from "@/utils/var";
 import EditArchivePlan from "./edit";
@@ -89,7 +89,7 @@ const ArchivePlan = () => {
                 <div>
                     <Button type="primary" size="small" onClick={() => handleModalEdit(record)} shape="circle" icon={<EditOutlined/>}/>
                     &nbsp;
-                    <Button type="danger" size="small" onClick={() => handleDell(record)} shape="circle" icon={<DeleteOutlined/>}/>
+                    <Button type="primary" danger="true" size="small" onClick={() => handleDell(record)} shape="circle" icon={<DeleteOutlined/>}/>
                 </div>
             ),
         },
@@ -111,7 +111,13 @@ const ArchivePlan = () => {
         // 在发请求前, 显示loading
         setLoading(true)
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await archivePlanPageApi(para).catch(()=>{setLoading(false)});
+        const {err, result} = await archivePlanPageApi(para);
+        if (err){
+            console.error('获取归档的计划提醒列表数据异常:',err)
+            setLoading(false)
+            return
+        }
+        const {msg, code, data} = result
         // 在请求完成后, 隐藏loading
         setLoading(false)
         if (code === 0) {
@@ -204,7 +210,13 @@ const ArchivePlan = () => {
             onOk: async () => {
                 // 在发请求前, 显示loading
                 setLoading(true)
-                const {msg, code} = await deleteArchivePlanApi(item.id).catch(()=>setLoading(false));
+                const {err, result} = await deleteArchivePlanApi(item.id);
+                if (err){
+                    console.error('删除指定已提醒计划异常:',err)
+                    setLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false)
                 if (code === 0) {
@@ -244,7 +256,7 @@ const ArchivePlan = () => {
                                        placeholder='按内容检索'/>
                             </Form.Item>
                             <Form.Item label="执行时间:">
-                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} onChange={onChangeDate}/>
+                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[dayjs(filters.begin_time),dayjs(filters.end_time)]:[null,null]} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
                                 <Button type="primary" htmlType="button" onClick={getData}>

@@ -4,12 +4,9 @@ import {useEffect,useState} from 'react';
 import {logPageApi,logTypeListApi,downloadLogExcelApi} from "@/http/api"
 import Storage from '@/utils/storage'
 import {SearchOutlined,ReloadOutlined,FileExcelOutlined} from '@ant-design/icons';
-import moment from 'moment';
+import dayjs from 'dayjs';
 import axios from 'axios'
 import {disabledDate, extractUserName} from "@/utils/var"
-import { writeBinaryFile,BaseDirectory } from '@tauri-apps/api/fs';
-
-
 
 const {RangePicker} = DatePicker;
 const {Option} = Select;
@@ -67,7 +64,12 @@ const Log = () => {
      */
     const getTypeData = async () => {
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await logTypeListApi();
+        const {err,result} = await logTypeListApi();
+        if (err){
+            console.error('获取日志类别异常:',err)
+            return
+        }
+        const {msg, code, data} = result;
         if (code === 0) {
             // 利用更新状态的回调函数，渲染下拉选框
             let type = [];
@@ -96,7 +98,13 @@ const Log = () => {
         // 在发请求前, 显示loading
         setLoading(true)
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await logPageApi(para).catch(()=>setLoading(false));
+        const {err,result} = await logPageApi(para);
+        if (err){
+            console.error('获取日志数据异常:',err)
+            setLoading(false)
+            return
+        }
+        const {msg, code, data} = result
         // 在请求完成后, 隐藏loading
         setLoading(false);
         if (code === 0) {
@@ -197,12 +205,24 @@ const Log = () => {
             },
         }).then( async (res) => {
             setLoading(false);
-            console.log(res)
-            let blob = new Blob([res.data]);
-            blob.arrayBuffer().then(async buffer => {
-                await writeBinaryFile({path: fileName, contents: buffer}, {dir: BaseDirectory.Desktop});
-                openNotificationWithIcon("success","导出提示", `${fileName}已经导出到桌面，请及时查阅`)
-            })
+            // console.log(res)
+            // let blob = new Blob([res.data]);
+            // blob.arrayBuffer().then(async buffer => {
+            //     await writeBinaryFile({path: fileName, contents: buffer}, {dir: BaseDirectory.Desktop});
+            //     openNotificationWithIcon("success","导出提示", `${fileName}已经导出到桌面，请及时查阅`)
+            // })
+
+            let blob = new Blob([res.data], {type: 'application/x-xlsx'});   //word文档为msword,pdf文档为pdf，excel文档为x-xls
+            if (window.navigator.msSaveOrOpenBlob) {
+                navigator.msSaveBlob(blob, fileName);
+            } else {
+                let link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+                window.URL.revokeObjectURL(link.href);
+            }
+
         }).catch((res) =>{
             setLoading(false);
             console.log(res)
@@ -222,15 +242,15 @@ const Log = () => {
                         <Form layout="inline">
                             <Form.Item label="操作类别:">
                                 <Select value={filters.category} style={{width:'10em'}} showSearch onChange={onChangeType}
-                                        placeholder="请选择操作类别">
+                                        placeholder="请选择">
                                     {type}
                                 </Select>
                             </Form.Item>
                             <Form.Item label="操作时间:">
-                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
+                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[dayjs(filters.begin_time),dayjs(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
-                                <Button type="primary" htmlType="button" onClick={getData}>
+                                <Button type="primary" htmlType="button" onClick={() => getData()}>
                                     <SearchOutlined/>查询
                                 </Button>
                             </Form.Item>

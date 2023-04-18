@@ -1,0 +1,65 @@
+.illustration-ul{
+  width: 100%;
+  height: auto;
+  list-style: none;
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  .album-div-imgdiv {
+    padding: 0.5em;
+    position:relative;/*相对定位*/
+    .tools{
+      /*display: none;*/
+      z-index: 10;
+      position:absolute;/*绝对定位*/
+      padding-top: 1em;
+      padding-bottom: 1em;
+      padding-left: 1em;
+
+      a{
+        position:relative;/*相对定位*/
+        margin-right: 1em;
+      }
+    }
+
+    .a-img{
+      display: block;
+      overflow: hidden;
+
+      .img-responsive{
+        height: 190px;
+        width: auto;
+        z-index: 8;
+      }
+    }
+
+  }
+
+  .album-div a {
+    outline: none;
+    blr: ~"expression(this.onFocus=this.blur())";
+    text-decoration: none;
+    color: #323232;
+  }
+  .album-div-imgdiv a:hover img {
+    filter: alpha(opacity=85);
+    -moz-opacity: 0.85;
+    opacity: 0.85;
+    transform: scale(1.2);
+    -webkit-transform: scale(1.2);
+  }
+  .album-div-imgdiv a img {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    transition: 1s;
+  }
+  img, object {
+    max-width: 100%;
+    /* height: auto; */
+    width: auto\9;
+    -ms-interpolation-mode: bicubic;
+  }
+}
+

@@ -11,3 +11,16 @@ export const getPlanHowOftenExecute = (key:number) => {
     }
     return array[key-1];
 };
+
+
+/**
+ * @description: 请求配置
+ */
+export enum ResultEnum {
+    SUCCESS = 200,
+    UNAUTHORIZED = 401,
+    ERROR = 500,
+    OVERDUE = 599,
+    TIMEOUT = 120000,
+    TYPE = "success"
+}

@@ -9,7 +9,7 @@ import Storage from "@/utils/storage";
 
 
 /*
- * 文件名：index.tsx
+ * 文件名：index.jsx
  * 作者：liunengkai
  * 创建日期：2022-10-05 - 22:04
  * 描述：
@@ -27,6 +27,10 @@ const CropperComponent = () => {
     const [cropper,setCropper] = useState<Cropper>('')
 
     useEffect(() => {
+        init()
+    }, []);
+
+    const init = async () => {
         const fileReader = new FileReader();
         fileReader.onload = (e) => {
             setSrc(e.target.result)
@@ -39,7 +43,8 @@ const CropperComponent = () => {
         // if (file) {
         //   fileReader.readAsDataURL(props.uploadedImageFile)
         // }
-    }, []);
+    }
+
 
 
     //选择图片
@@ -85,7 +90,12 @@ const CropperComponent = () => {
         let para = {
             content: image.toString()
         };
-        const result = await uploadLogoApi(para).catch(()=>{setConfirm(true)});
+        const {err,result} = await uploadLogoApi(para);
+        if (err){
+            console.error("图片上传失败:",err)
+            setConfirm(true)
+            return
+        }
         setConfirm(false)
         let {msg, code,data} = result;
         if (code === 0) {

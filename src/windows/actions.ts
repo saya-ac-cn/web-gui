@@ -1,63 +1,6 @@
-/**
- * 处理渲染器进程到主进程的异步通信
- */
-
 import { WebviewWindow } from '@tauri-apps/api/window'
-import { emit } from '@tauri-apps/api/event'
 
-/**
- * @desc 创建新窗口
- */
-export async function createWin(args) {
-    await emit('win-create', args)
-}
-
-/**
- * @desc 获取窗口
- * @param args {string}
- */
-export async function getWin(label) {
-    return await WebviewWindow.getByLabel(label)
-}
-
-/**
- * @desc 设置窗口
- * @param type {string} 'show'|'hide'|'close'|'min'|'max'|'max2min'|'exit'|'relaunch'
- */
-export async function setWin(type) {
-    await emit('win-' + type)
-}
-
-/**
- * @desc 登录窗口
- */
-export async function openLoginWin() {
-    await createWin({
-        label: 'Login',
-        title: '登录',
-        url: '/login',
-        width: 890,
-        height: 528,
-        resizable: false,
-        alwaysOnTop: true,
-    })
-}
-
-/**
- * @desc 登录窗口
- */
-export async function openStageWin() {
-    await createWin({
-        label: 'Stage',
-        title: '控制面板',
-        url: '/stage/home',
-        width: 768,
-        height: 1366,
-        resizable: false,
-        alwaysOnTop: true,
-    })
-}
-
+// 参考 https://blog.csdn.net/weixin_47367099/article/details/127471024?spm=1001.2014.3001.5502
 export const openLoginWindow = () => {
     const webview = new WebviewWindow("login", {
         label: 'login',
@@ -75,23 +18,22 @@ export const openLoginWindow = () => {
     webview.once("tauri://created", function () {
         // webview window successfully created
         console.log('Login Open Success');
+        const stageWindow:WebviewWindow | null = WebviewWindow.getByLabel("stage");
+        if (stageWindow){
+            stageWindow?.close();
+        }
     });
     webview.once("tauri://error", function (e) {
         // an error happened creating the webview window
-        console.log('Login Open Fail:',e);
+        console.error('Login Open Fail:',e);
     });
-
-    const stageWindow:WebviewWindow | null = WebviewWindow.getByLabel("stage");
-    if (stageWindow){
-        stageWindow.close();
-    }
 }
 
 export const openStageWindow = () => {
     const webview = new WebviewWindow("stage", {
         label: 'stage',
         title: '控制面板',
-        url: '/stage/home',
+        url: '/backstage/home',
         width: 1600,
         height: 900,
         center: true,
@@ -103,14 +45,13 @@ export const openStageWindow = () => {
     webview.once("tauri://created", function () {
         // webview window successfully created
         console.log('Stage Open Success');
+        const loginWindow:WebviewWindow | null = WebviewWindow.getByLabel("login");
+        if (loginWindow){
+            loginWindow?.close();
+        }
     });
     webview.once("tauri://error", function (e) {
         // an error happened creating the webview window
-        console.log('Stage Open Fail:',e);
+        console.error('Stage Open Fail:',e);
     });
-
-    const loginWindow:WebviewWindow | null = WebviewWindow.getByLabel("login");
-    if (loginWindow){
-        loginWindow.close();
-    }
 }

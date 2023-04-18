@@ -3,7 +3,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import {Button, Tag, Drawer, Form, Input, Space, InputRef} from 'antd';
 
 import {clearTrimValueEvent} from "@/utils/string";
-import {createNewsApi, editNewsApi, newsInfoApi} from "@/http/api"
+import {getToken,createNewsApi, editNewsApi, newsInfoApi} from "@/http/api"
 import {openNotificationWithIcon} from "@/utils/window";
 import './edit.less'
 import Editor from "@/component/editor";
@@ -26,11 +26,14 @@ const EditNews = (props,ref) => {
     const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
     const [labelVisible,setLabelVisible] = useState<boolean>(false);
     const [label,setLabel] = useState<string>(null);
+    const [token,setToken] = useState('');
+
 
     // 暴露方法给父组件
     useImperativeHandle(ref,()=>({
         handleDisplay
     }))
+
 
     useEffect(() => {
         if (labelVisible) {
@@ -39,13 +42,26 @@ const EditNews = (props,ref) => {
     }, [labelVisible]);
 
     /**
+     * 初始化token
+     */
+    const initToken = async () => {
+        setToken(await getToken())
+    }
+
+
+    /**
      * 初始化数据
      * @param val
      */
     const handleDisplay = async (val: number) => {
         if (val) {
             // 发异步ajax请求, 获取数据
-            const {msg, code, data} = await newsInfoApi(val);
+            const {err,result} = await newsInfoApi(val);
+            if (err){
+                console.error('获取动态异常:',err)
+                return
+            }
+            const {msg, code, data} = result
             if (code === 0) {
                 const label = data.label === null ? [] : (data.label).split(';')
                 setNews({id:data.id,topic: data.topic,label: label,content: data.content})
@@ -64,6 +80,7 @@ const EditNews = (props,ref) => {
             console.log("2==",editorRef?.current)
             editorRef.current.initEditor(null);
         }
+        initToken();
         setOpen(true);
     };
 
@@ -146,7 +163,7 @@ const EditNews = (props,ref) => {
             } else {
                 label = null
             }
-            let param = {topic: values.topic,label: label,content: content};
+            let param = {topic: values.topic,label: label,content: content,token:token};
             if (news.id){
                 // 执行修改
                 param.id = news.id;
@@ -160,10 +177,19 @@ const EditNews = (props,ref) => {
         });
     };
 
-    // 更新动态
+    /**
+     * 更新动态
+     * @param param
+     */
     const updateNews = async (param) => {
         setConfirmLoading(true);
-        const {msg, code} = await editNewsApi(param).catch(()=>setConfirmLoading(false));
+        const {err, result} = await editNewsApi(param);
+        if (err){
+            console.log('更新动态异常:',err)
+            setConfirmLoading(false)
+            return
+        }
+        const {msg, code} = result
         setConfirmLoading(false);
         if (code === 0) {
             openNotificationWithIcon("success", "操作结果", "动态修改成功");
@@ -171,14 +197,25 @@ const EditNews = (props,ref) => {
             // 调用父页面的刷新数据方法
             props.refreshPage();
         } else {
+            // 为下一次的提交申请一个token
+            setToken(await getToken());
             openNotificationWithIcon("error", "错误提示", msg);
         }
     };
 
-    // 创建动态
+    /**
+     * 创建动态
+     * @param param
+     */
     const createNews = async (param) => {
         setConfirmLoading(true);
-        const {msg, code} = await createNewsApi(param).catch(()=>setConfirmLoading(false));
+        const {err, result} = await createNewsApi(param);
+        if (err){
+            console.log('创建动态异常:',err)
+            setConfirmLoading(false)
+            return
+        }
+        const {msg, code} = result
         setConfirmLoading(false);
         if (code === 0) {
             openNotificationWithIcon("success", "操作结果", "动态发布成功");
@@ -186,6 +223,8 @@ const EditNews = (props,ref) => {
             // 调用父页面的刷新数据方法
             props.refreshPage();
         } else {
+            // 为下一次的提交申请一个token
+            setToken(await getToken());
             openNotificationWithIcon("error", "错误提示", msg);
         }
     };

@@ -1,39 +1,13 @@
-import {defineConfig, loadEnv} from "vite";
+import { defineConfig, loadEnv} from "vite";
 import react from "@vitejs/plugin-react";
-import vitePluginImp from 'vite-plugin-imp'
 import path from 'path'
 
 // https://vitejs.dev/config/
 export default ({mode}) => {
   const env = loadEnv(mode,process.cwd())
-  return defineConfig({
-    plugins: [
-      react(),
-      vitePluginImp({
-        optimize: true,
-        libList: [
-          {
-            libName: 'antd',
-            libDirectory: 'es',
-            // style: (name) => `antd/es/${name}/style`,
-            style: (name) => {
-              return true;//`antd/es/${name}/style`
-            }
-          },
-        ],
-      }),
-    ],
-    css: {
-      preprocessorOptions: {
-        less: {
-          modifyVars: {
-            '@primary-color': '#b59afe',
-          },
-          javascriptEnabled: true
-        }
-      }
-    },
-
+  console.error('env.VITE_API',env.VITE_API)
+  return defineConfig( {
+    plugins: [react()],
     resolve:{
       alias:{
         '@':path.resolve(__dirname,'./src')
@@ -50,7 +24,6 @@ export default ({mode}) => {
         '/backend': {
           target: env.VITE_API,
           changeOrigin: true,
-          //rewrite: path => path.replace(/^\/api/, '')
         },
         '/warehouse/picture':{
           target: env.VITE_API,
@@ -63,7 +36,7 @@ export default ({mode}) => {
     envPrefix: ["VITE_", "TAURI_"],
     build: {
       // Tauri supports es2021
-      target: ["es2021", "chrome100", "safari13"],
+      target: process.env.TAURI_PLATFORM == "windows" ? "chrome105" : "safari13",
       // don't minify for debug builds
       minify: !process.env.TAURI_DEBUG ? "esbuild" : false,
       // produce sourcemaps for debug builds

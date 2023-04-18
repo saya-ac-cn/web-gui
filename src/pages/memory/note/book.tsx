@@ -3,7 +3,7 @@ import {Form, Input, Modal, Radio, Tooltip} from "antd";
 import {clearTrimValueEvent} from "@/utils/string";
 import {QuestionCircleOutlined} from "@ant-design/icons";
 import {openNotificationWithIcon} from "@/utils/window";
-import {createNoteBookApi, updateNoteBookApi} from "@/http/api";
+import {createNoteBookApi, updateNoteBookApi, getToken} from "@/http/api";
 
 
 const formItemLayout = {
@@ -19,8 +19,14 @@ const EditNoteBook = (props,ref) => {
     const [bookId,setBookId] = useState<number>()
     const [open, setOpen] = useState<boolean>(false);
     const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
+    const [token,setToken] = useState('');
 
-
+    /**
+     * 初始化token
+     */
+    const initToken = async () => {
+        setToken(await getToken())
+    }
 
     // 暴露方法给父组件
     useImperativeHandle(ref,()=>({
@@ -42,6 +48,7 @@ const EditNoteBook = (props,ref) => {
         }else{
             bookForm.setFieldsValue({name: null, descript: null, status: 1});
         }
+        initToken()
         setOpen(true);
     };
 
@@ -50,6 +57,7 @@ const EditNoteBook = (props,ref) => {
      */
     const handleSubmit = () => {
         bookForm.validateFields(['name', 'descript', 'status']).then(value => {
+            value.token = token
             if (bookId) {
                 // 执行修改
                 value.id = bookId;
@@ -72,7 +80,13 @@ const EditNoteBook = (props,ref) => {
             title: '您确定创建该笔记簿?',
             onOk: async () => {
                 setConfirmLoading(true);
-                const {msg, code} = await createNoteBookApi(value).catch(()=>setConfirmLoading(false));
+                const {err, result} = await createNoteBookApi(value);
+                if (err){
+                    console.error('创建笔记簿异常:',err)
+                    setConfirmLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 setConfirmLoading(false);
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "添加成功");
@@ -80,6 +94,8 @@ const EditNoteBook = (props,ref) => {
                     props.refreshPage();
                     handleCancel();
                 } else {
+                    // 为下一次的提交申请一个token
+                    setToken(await getToken());
                     openNotificationWithIcon("error", "错误提示", msg);
                 }
             },
@@ -99,7 +115,13 @@ const EditNoteBook = (props,ref) => {
             title: '您确定要保存此次修改结果?',
             onOk: async () => {
                 setConfirmLoading(true);
-                const {msg, code} = await updateNoteBookApi(value).catch(()=>setConfirmLoading(false));
+                const {err, result} = await updateNoteBookApi(value);
+                if (err){
+                    console.error('修改笔记簿异常:',err)
+                    setConfirmLoading(false)
+                    return
+                }
+                const {msg, code} = result
                 setConfirmLoading(false);
                 if (code === 0) {
                     openNotificationWithIcon("success", "操作结果", "修改成功");
@@ -107,6 +129,8 @@ const EditNoteBook = (props,ref) => {
                     props.refreshPage();
                     handleCancel();
                 } else {
+                    // 为下一次的提交申请一个token
+                    setToken(await getToken());
                     openNotificationWithIcon("error", "错误提示", msg);
                 }
             },

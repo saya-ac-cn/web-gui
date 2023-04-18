@@ -3,10 +3,12 @@ import { Form, Input, Button, Checkbox } from 'antd';
 import "./index.less"
 import {clearTrimValueEvent} from "@/utils/string"
 import Storage from '@/utils/storage'
-import {loginApi,ownOrganizeUserApi} from "@/http/api"
 import {openNotificationWithIcon} from "@/utils/window";
-import {openStageWindow} from '@/windows/actions'
 import { appWindow } from '@tauri-apps/api/window'
+import {loginApi,ownOrganizeUserApi} from "@/http/api"
+import { invoke } from '@tauri-apps/api/tauri'
+import {openStageWindow} from "@/windows/actions";
+import {isEmptyObject} from "@/utils/var";
 /**
  * 表单布局
  */
@@ -25,8 +27,34 @@ const Login = () => {
     const [loading, setLoading] = useState(false);
 
     useEffect(()=>{
+        checkLogin()
         rememberMeData()
     },[])
+
+    const checkLogin = () => {
+        // 缓存数据缺一不可
+        const access_token = Storage.get(Storage.ACCESS_KEY)
+        if (isEmptyObject(access_token)){
+            return
+        }
+        const user = Storage.get(Storage.USER_KEY)
+        if (isEmptyObject(user)){
+            return
+        }
+        const plan = Storage.get(Storage.PLAN_KEY)
+        if (isEmptyObject(plan)){
+            return
+        }
+        const log = Storage.get(Storage.LOG_KEY)
+        if (isEmptyObject(log)){
+            return
+        }
+        const organize = Storage.get(Storage.ORGANIZE_KEY)
+        if (isEmptyObject(organize)){
+            return
+        }
+        openStageWindow()
+    }
 
     /**
      * 读取记住我的信息
@@ -51,35 +79,43 @@ const Login = () => {
         });
     };
 
-    const loginHandle = async (values) => {
-        let loginParam = {account: values.account, password: values.password};
-        const result = await loginApi(loginParam).catch(()=>{setLoading(false)});
-        setLoading(false);
+    const loginHandle = async (values:any) => {
+        let loginParam = {account: values.account, password: values.password,platform:'desktop'};
+        // invoke('login',{arg: loginParam}).then((message) => console.log(message))
+        //     .catch((error) => console.error('error',error))
+        setLoading(true);
+        const {err,result} = await loginApi(loginParam);
+        if (err){
+            console.error('登录失败:',err)
+            setLoading(false);
+            return
+        }
         let {code, data} = result;
-        if (code === 0) {
-            let {access_token,log,plan,user} = data
-            // 保存到local中
-            Storage.add(Storage.ACCESS_KEY,access_token)
-            Storage.add(Storage.USER_KEY,user)
-            Storage.add(Storage.PLAN_KEY,plan)
-            Storage.add(Storage.LOG_KEY,log)
-            // 获取组织用户列表信息
-            await getOwnOrganizeUser()
-            if (values.remember){
-                const cache = { account: values.account}
-                Storage.add(Storage.LOGIN_KEY,cache)
-            }
-            openStageWindow()
+        setLoading(false);
+        if (code == 0) {
+           let {access_token,log,plan,user} = data
+           // 保存到local中
+           Storage.add(Storage.ACCESS_KEY,access_token)
+           Storage.add(Storage.USER_KEY,user)
+           Storage.add(Storage.PLAN_KEY,plan)
+           Storage.add(Storage.LOG_KEY,log)
+           // 获取组织用户列表信息
+           await getOwnOrganizeUser()
+           if (values.remember){
+               const cache = { account: values.account}
+               Storage.add(Storage.LOGIN_KEY,cache)
+           }
+           openStageWindow()
         } else if (code === 5) {
-            openNotificationWithIcon("error", "错误提示", '请输入用户名和密码');
+           openNotificationWithIcon("error", "错误提示", '请输入用户名和密码');
         } else {
-            openNotificationWithIcon("error", "错误提示", '用户名或密码错误');
+           openNotificationWithIcon("error", "错误提示", '用户名或密码错误');
         }
     }
 
     // 关闭
     const handleAppClose = async() => {
-        await appWindow.minimize()
+        await appWindow.hide()
     }
 
     /**
@@ -87,8 +123,13 @@ const Login = () => {
      */
     const getOwnOrganizeUser = async () => {
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await ownOrganizeUserApi()
-        if (code === 0) {
+        const {err,result} = await ownOrganizeUserApi()
+        if (err){
+            console.error('获取自己所在组织数据异常:',err)
+            return
+        }
+        const {msg, code, data} = result
+        if (code == 0) {
             let organize = {};
             for (let index in data) {
                 const item = data[index]
@@ -104,8 +145,8 @@ const Login = () => {
         <div style={{backgroundImage: `url('/picture/login/login_background.png')`}} className='login-page'>
             <div data-tauri-drag-region className='window-title'>
                 <a onClick={handleAppClose} className='light red'/>
-                {/*<a className='light yellow'/>*/}
-                {/*<a className='light green'/>*/}
+                <a className='light yellow'/>
+                <a className='light green'/>
             </div>
             <Form {...layout} name="login" form={loinForm}>
                 <h2 className="title">统一身份认证入口</h2>

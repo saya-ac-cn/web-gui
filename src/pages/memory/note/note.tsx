@@ -2,7 +2,7 @@ import React, {forwardRef, useEffect, useImperativeHandle, useRef, useState} fro
 import {Button, Form, Drawer, Input, Tag, Select, Space} from "antd";
 import Editor from '@/component/editor'
 import {openNotificationWithIcon} from "@/utils/window";
-import {noteInfoApi, updateNoteApi, createNoteApi, noteBookListApi} from "@/http/api"
+import {noteInfoApi, updateNoteApi, createNoteApi, noteBookListApi, getToken} from "@/http/api"
 import {clearTrimValueEvent} from "@/utils/string";
 import {PlusOutlined} from "@ant-design/icons";
 import type { InputRef } from 'antd';
@@ -28,6 +28,14 @@ const EditNote = (props,ref) => {
     const [labelVisible,setLabelVisible] = useState<boolean>(false);
     const [label,setLabel] = useState<string>(null);
     const [group,setGroup] = useState([])
+    const [token,setToken] = useState('');
+
+    /**
+     * 初始化token
+     */
+    const initToken = async () => {
+        setToken(await getToken())
+    }
 
     // 暴露方法给父组件
     useImperativeHandle(ref,()=>({
@@ -49,7 +57,12 @@ const EditNote = (props,ref) => {
         getNoteBook();
         if (val) {
             // 发异步ajax请求, 获取数据
-            const {msg, code, data} = await noteInfoApi(val);
+            const {err, result} = await noteInfoApi(val);
+            if (err){
+                console.error('获取笔记异常:',err)
+                return
+            }
+            const {msg, code,data} = result
             if (code === 0) {
                 const label = data.label === null ? [] : (data.label).split(';')
                 setNote({id:data.id,topic: data.topic,label: label,notebook_id:data.notebook_id,content: data.content})
@@ -66,6 +79,7 @@ const EditNote = (props,ref) => {
             noteForm.setFieldsValue({topic: null,notebook_id:null});
             editorRef.current.initEditor(null);
         }
+        initToken()
         setOpen(true);
     };
 
@@ -149,7 +163,7 @@ const EditNote = (props,ref) => {
             } else {
                 label = null
             }
-            let param = {topic: values.topic,label: label,content: content,notebook_id: values.notebook_id};
+            let param = {topic: values.topic,label: label,content: content,notebook_id: values.notebook_id,token:token};
             if (note.id){
                 // 执行修改
                 param.id = note.id;
@@ -162,13 +176,19 @@ const EditNote = (props,ref) => {
     };
 
     /**
-     * 更新动态
+     * 更新笔记
      * @param param
      * @returns {Promise<void>}
      */
     const updateNotes = async (param) => {
         setConfirmLoading(true);
-        const {msg, code} = await updateNoteApi(param).catch(()=>setConfirmLoading(false));
+        const {err, result} = await updateNoteApi(param);
+        if (err){
+            console.error('更新笔记异常:',err)
+            setConfirmLoading(false)
+            return
+        }
+        const {msg, code} = result
         setConfirmLoading(false);
         if (code === 0) {
             openNotificationWithIcon("success", "操作结果", "笔记修改成功");
@@ -176,18 +196,26 @@ const EditNote = (props,ref) => {
             // 调用父页面的刷新数据方法
             props.refreshPage();
         } else {
+            // 为下一次的提交申请一个token
+            setToken(await getToken());
             openNotificationWithIcon("error", "错误提示", msg);
         }
     };
 
     /**
-     * 创建动态
+     * 创建笔记
      * @param param
      * @returns {Promise<void>}
      */
     const createNotes = async (param) => {
         setConfirmLoading(true);
-        const {msg, code} = await createNoteApi(param).catch(()=>setConfirmLoading(false));
+        const {err, result} = await createNoteApi(param);
+        if (err){
+            console.error('创建笔记异常:',err)
+            setConfirmLoading(false)
+            return
+        }
+        const {msg, code} = result
         setConfirmLoading(false);
         if (code === 0) {
             openNotificationWithIcon("success", "操作结果", "笔记保存成功");
@@ -195,6 +223,8 @@ const EditNote = (props,ref) => {
             // 调用父页面的刷新数据方法
             props.refreshPage();
         } else {
+            // 为下一次的提交申请一个token
+            setToken(await getToken());
             openNotificationWithIcon("error", "错误提示", msg);
         }
     };
@@ -205,7 +235,12 @@ const EditNote = (props,ref) => {
      */
     const getNoteBook = async () => {
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await noteBookListApi()
+        const {err, result} = await noteBookListApi()
+        if (err){
+            console.error('获取笔记簿下拉选择列表数据异常:',err)
+            return
+        }
+        const {msg, code,data} = result
         if (code === 0) {
             let notebooks = [];
             data.forEach(item => {

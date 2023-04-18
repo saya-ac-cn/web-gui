@@ -1,5 +1,5 @@
 import {Button, Col, DatePicker, Form, Table} from "antd";
-import moment from "moment";
+import dayjs from 'dayjs';
 import {disabledDate} from "@/utils/var";
 import {ReloadOutlined, SearchOutlined} from "@ant-design/icons";
 import {useEffect, useState} from "react";
@@ -8,7 +8,7 @@ import {dbDumpPageApi} from "@/http/api"
 
 
 const {RangePicker} = DatePicker;
-const Data = () => {
+const DB = () => {
 
     const [grid,setGrid] = useState([])
     const [pagination,setPagination] = useState({page_no:1,page_size:10,data_total:0})
@@ -55,7 +55,13 @@ const Data = () => {
         // 在发请求前, 显示loading
         setLoading(true)
         // 发异步ajax请求, 获取数据
-        const {msg, code, data} = await dbDumpPageApi(para);
+        const {err,result} = await dbDumpPageApi(para);
+        if (err){
+            setLoading(false)
+            console.error('获取备份数据异常:',err)
+            return
+        }
+        const {msg, code,data} = result
         // 在请求完成后, 隐藏loading
         setLoading(false)
         if (code === 0) {
@@ -129,7 +135,7 @@ const Data = () => {
                     <Col span={24} className="toolbar">
                         <Form layout="inline">
                             <Form.Item label="归档时间:">
-                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[moment(filters.begin_time),moment(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
+                                <RangePicker value={(filters.begin_time !== null && filters.end_time !== null)?[dayjs(filters.begin_time),dayjs(filters.end_time)]:[null,null]} disabledDate={disabledDate} onChange={onChangeDate}/>
                             </Form.Item>
                             <Form.Item>
                                 <Button type="primary" htmlType="button" onClick={getData}>
@@ -159,4 +165,4 @@ const Data = () => {
     )
 }
 
-export default Data
+export default DB
