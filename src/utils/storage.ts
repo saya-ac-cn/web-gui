@@ -47,7 +47,6 @@ export default {
         store.remove(PLAN_KEY)
         store.remove(LOG_KEY)
         store.remove(ORGANIZE_KEY)
-        store.remove(LOGIN_KEY)
     }
 
 }

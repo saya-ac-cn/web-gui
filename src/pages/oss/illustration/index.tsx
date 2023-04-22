@@ -4,7 +4,6 @@ import dayjs from 'dayjs';
 import './index.less'
 import {picturePageApi, deletePictureApi} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
-import DocumentTitle from 'react-document-title'
 import {disabledDate,isEmptyObject,deepClone} from "@/utils/var";
 import {
   CheckOutlined,
@@ -184,7 +183,7 @@ const Illustration = () => {
     };
 
     return (
-        <DocumentTitle title='插图管理'>
+        <div>
             <div className='child-container'>
                 <div className='header-tools'>
                     插图管理
@@ -246,7 +245,7 @@ const Illustration = () => {
                     </Row>
                 </div>
             </div>
-        </DocumentTitle>
+        </div>
     );
 
 

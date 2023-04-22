@@ -7,6 +7,7 @@ import {SearchOutlined,ReloadOutlined,FileExcelOutlined} from '@ant-design/icons
 import dayjs from 'dayjs';
 import axios from 'axios'
 import {disabledDate, extractUserName} from "@/utils/var"
+import { writeBinaryFile,BaseDirectory } from '@tauri-apps/api/fs';
 
 const {RangePicker} = DatePicker;
 const {Option} = Select;
@@ -205,24 +206,11 @@ const Log = () => {
             },
         }).then( async (res) => {
             setLoading(false);
-            // console.log(res)
-            // let blob = new Blob([res.data]);
-            // blob.arrayBuffer().then(async buffer => {
-            //     await writeBinaryFile({path: fileName, contents: buffer}, {dir: BaseDirectory.Desktop});
-            //     openNotificationWithIcon("success","导出提示", `${fileName}已经导出到桌面，请及时查阅`)
-            // })
-
             let blob = new Blob([res.data], {type: 'application/x-xlsx'});   //word文档为msword,pdf文档为pdf，excel文档为x-xls
-            if (window.navigator.msSaveOrOpenBlob) {
-                navigator.msSaveBlob(blob, fileName);
-            } else {
-                let link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = fileName;
-                link.click();
-                window.URL.revokeObjectURL(link.href);
-            }
-
+            blob.arrayBuffer().then(async buffer => {
+                await writeBinaryFile({path: fileName, contents: buffer}, {dir: BaseDirectory.Desktop});
+                openNotificationWithIcon("success","导出提示", `${fileName}已经导出到桌面，请及时查阅`)
+            })
         }).catch((res) =>{
             setLoading(false);
             console.log(res)

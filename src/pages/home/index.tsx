@@ -5,7 +5,7 @@ const Home = () => {
 
     return (
         <div>
-           2
+            {Date.now()}
         </div>
     )
 }

@@ -1,10 +1,8 @@
 import {useEffect, useState} from "react";
 import {Button, Row, Col, Input, Form, DatePicker, Modal, Spin, Upload} from "antd";
-import moment from 'moment';
 import './index.less'
 import {picturePageApi, deletePictureApi, uploadWallpaperApi, editUserInfoApi, getToken} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
-import DocumentTitle from 'react-document-title'
 import axios from 'axios'
 import Storage from "@/utils/storage";
 import {ReloadOutlined, SearchOutlined,CloudUploadOutlined,DeleteOutlined,HeartOutlined,MinusOutlined,MoreOutlined,CheckOutlined} from "@ant-design/icons";
@@ -336,7 +334,7 @@ const Wallpaper = () => {
     };
 
     return (
-        <DocumentTitle title='壁纸管理'>
+        <div>
             <div className='child-container'>
                 <div className='header-tools'>
                     壁纸管理
@@ -429,7 +427,7 @@ const Wallpaper = () => {
                     </Row>
                 </div>
             </div>
-        </DocumentTitle>
+        </div>
     );
 }
 

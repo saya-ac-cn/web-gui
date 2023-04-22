@@ -25,7 +25,7 @@ export default ({mode}) => {
           target: env.VITE_API,
           changeOrigin: true,
         },
-        '/warehouse/picture':{
+        '/warehouse':{
           target: env.VITE_API,
           changeOrigin: true,
         }

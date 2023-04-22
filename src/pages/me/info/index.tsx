@@ -4,7 +4,7 @@ import Storage from "@/utils/storage";
 import {openNotificationWithIcon} from "@/utils/window";
 import {editUserInfoApi,editPwdApi,getToken} from "@/http/api";
 import {Button, Input,DatePicker,Form} from "antd";
-import {FormOutlined, CheckOutlined,CloseOutlined} from "@ant-design/icons";
+import {FormOutlined} from "@ant-design/icons";
 import './index.less'
 import Cropper from '@/component/cropper'
 import {clearTrimValueEvent} from "@/utils/string";

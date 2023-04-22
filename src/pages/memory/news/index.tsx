@@ -1,4 +1,4 @@
-import React, {Component, useEffect, useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Button, Col, Table, DatePicker, Input, Form, Modal, Tag} from "antd";
 import {deleteNewsApi, newsPageApi} from "@/http/api";
 import {openNotificationWithIcon} from "@/utils/window";
@@ -271,4 +271,4 @@ const News = () =>  {
 }
 
 // 对外暴露
-export default News;
+export default React.memo(News);

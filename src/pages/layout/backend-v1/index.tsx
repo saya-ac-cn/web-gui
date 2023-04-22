@@ -6,7 +6,7 @@ import Storage from '@/utils/storage'
 import routes from "@/menu/routes";
 import {isEmptyObject} from "@/utils/var"
 import { Button, Input, Menu, Popover, Avatar, Spin, Badge, Modal} from 'antd';
-import {FlagOutlined,RightOutlined,LeftOutlined,MenuOutlined, HomeOutlined,NotificationOutlined,MessageOutlined, DatabaseOutlined,HistoryOutlined,SearchOutlined,UserOutlined,AccountBookOutlined,ScheduleOutlined,PushpinOutlined,CarryOutOutlined,PayCircleOutlined,SkinOutlined} from '@ant-design/icons';
+import {RightOutlined,LeftOutlined,MenuOutlined, HomeOutlined,NotificationOutlined,MessageOutlined, DatabaseOutlined,HistoryOutlined,SearchOutlined,UserOutlined,AccountBookOutlined,ScheduleOutlined,PushpinOutlined,CarryOutOutlined,PayCircleOutlined,SkinOutlined} from '@ant-design/icons';
 import {logoutApi} from "@/http/api"
 import {appWindow} from "@tauri-apps/api/window";
 import {openLoginWindow} from "@/windows/actions";
@@ -196,7 +196,7 @@ const Layout = () => {
                 // 删除保存的user数据
                 Storage.removeAll();
                 // 跳转到login
-                navigate('/')
+                openLoginWindow()
             }
         })
     };
@@ -232,18 +232,7 @@ const Layout = () => {
 
     // 关闭
     const handleAppClose = async() => {
-        Modal.confirm({
-            title: '操作确认',
-            content:'确定关闭吗?',
-            onOk: async () => {
-                // 请求注销接口
-                // await requestLogout();
-                // 删除保存的user数据
-                Storage.removeAll();
-                // 跳转到login
-                openLoginWindow()
-            }
-        })
+        logout()
     }
 
     // 最小化
@@ -354,7 +343,6 @@ const Layout = () => {
                 </div>
                 <div className={rightCollapsed?'show-quick-div':'hide-quick-div'}>
                     <div className="quick-div-menu">
-                        <Button type="link" title='记账' href="/backstage/financial/journal"><PayCircleOutlined/></Button>
                         <Button type="link" title='发布动态' href="/backstage/memory/news"><NotificationOutlined/></Button>
                         <Button type="link" title='提醒事项' href="/backstage/plan/activity"><CarryOutOutlined/></Button>
                         <Button type="link" title='便利贴' href="/backstage/memory/memo"><PushpinOutlined/></Button>

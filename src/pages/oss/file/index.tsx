@@ -7,11 +7,11 @@ import axios from "axios";
 import {InboxOutlined,DeleteOutlined, CloudDownloadOutlined, EditOutlined, ReloadOutlined, SearchOutlined,CloudUploadOutlined} from "@ant-design/icons";
 import {disabledDate, extractUserName} from "@/utils/var";
 import Storage from "@/utils/storage";
+import FileView from './view';
+import { writeBinaryFile,BaseDirectory } from '@tauri-apps/api/fs';
+
 const {RangePicker} = DatePicker;
 const { Dragger } = Upload;
-import FileView from './view';
-
-
 const File = () => {
 
     const [grid,setGrid] = useState([])
@@ -279,19 +279,10 @@ const File = () => {
         }).then(function (res) {
             setLoading(false);
             let blob = new Blob([res.data]);
-            // blob.arrayBuffer().then(async buffer => {
-            //     await writeBinaryFile({path: row.file_name, contents: buffer}, {dir: BaseDirectory.Desktop});
-            //     openNotificationWithIcon("success","导出提示", `${row.file_name}已经导出到桌面，请及时查阅`)
-            // })
-            if (window.navigator.msSaveOrOpenBlob) {
-                navigator.msSaveBlob(blob, row.file_name);
-            } else {
-                let link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = row.file_name;
-                link.click();
-                window.URL.revokeObjectURL(link.href);
-            }
+            blob.arrayBuffer().then(async buffer => {
+                await writeBinaryFile({path: row.file_name, contents: buffer}, {dir: BaseDirectory.Desktop});
+                openNotificationWithIcon("success","导出提示", `${row.file_name}已经导出到桌面，请及时查阅`)
+            })
         }).catch(res => {
             setLoading(false);
             openNotificationWithIcon("error", "错误提示", "下载文件失败"+res);
