@@ -166,12 +166,12 @@ export const getOrderByAmount = params => RequestHttp.get(`${backendAPI}/financi
 // 近6个月的财务流水
 export const getPreSixMonthBill = params => RequestHttp.get(`${backendAPI}/financial/journal/total/pre6`, params).then(data =>{return {err:null, result:data}}).catch(err => {return {err:err, result:null}});
 
-export const getToken = async () => {
+export const getToken: () => (string | unknown) = async () => {
     // 发异步ajax请求, 获取数据
     const {err, result} = await getRequestToken()
-    if (err){
-        console.error("获取token异常:",err)
-        return null
+    if (err) {
+        console.error("获取token异常:", err)
+        return null;
     } else {
         return result.data;
     }

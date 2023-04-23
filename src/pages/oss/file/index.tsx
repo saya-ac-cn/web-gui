@@ -1,4 +1,4 @@
-import React, {Component, useEffect, useState,useRef} from 'react';
+import React, {useEffect, useState,useRef} from 'react';
 import {Button, Col, DatePicker, Table, Form, Input, Modal, Upload} from "antd";
 import {filePageApi, editFileApi, uploadFileApi, downloadFileApi, deleteFileApi, getToken} from "@/http/api"
 import {openNotificationWithIcon} from "@/utils/window";
@@ -28,7 +28,8 @@ const File = () => {
      * 初始化token
      */
     const initToken = async () => {
-        setToken(await getToken())
+        const token:string = await getToken();
+        setToken(token);
     }
 
 
