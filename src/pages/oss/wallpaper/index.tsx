@@ -125,7 +125,8 @@ const Wallpaper = () => {
             _filters.end_time = null;
         }
         setFilters(_filters)
-        setPagination({...pagination,next_page:1})
+        const _pagination = {...pagination,next_page:1}
+        setPagination(_pagination)
         getData(_filters,_pagination)
     };
 

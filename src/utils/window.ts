@@ -1,6 +1,4 @@
 import {notification} from 'antd';
-import React from 'react';
-
 
 
 
