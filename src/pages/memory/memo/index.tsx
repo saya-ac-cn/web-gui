@@ -6,12 +6,12 @@ import React, {useEffect, useRef, useState} from "react";
 import {openNotificationWithIcon} from "@/utils/window";
 import {deleteMemoApi, memoInfoApi, memoPageApi} from "@/http/api"
 import Storage from "@/utils/storage";
+import {ModalRef} from "@/utils/modal";
 import EditMemo from "./edit";
-
 const {RangePicker} = DatePicker;
 const Memo = () => {
 
-    const editRef = useRef();
+    const editRef = useRef<ModalRef | null>(null);
 
     const [grid,setGrid] = useState([])
     const [pagination,setPagination] = useState({page_no:1,page_size:10,data_total:0})
@@ -160,7 +160,7 @@ const Memo = () => {
      * 显示添加的弹窗
      */
     const handleModalAdd = () => {
-        editRef.current.handleDisplay(null);
+        editRef.current?.handleDisplay(null);
     };
 
     /**
@@ -179,7 +179,7 @@ const Memo = () => {
         const {msg, code,data} = result
         setLoading(false)
         if (code === 0) {
-            editRef.current.handleDisplay(data);
+            editRef.current?.handleDisplay(data);
         } else {
             openNotificationWithIcon("error", "错误提示", msg);
         }
@@ -208,7 +208,7 @@ const Memo = () => {
                 const {msg, code} = result
                 // 在请求完成后, 隐藏loading
                 setLoading(false);
-                if (code === 0) {
+                if (code == 0) {
                     openNotificationWithIcon("success", "操作结果", "删除成功");
                     getData();
                 } else {
